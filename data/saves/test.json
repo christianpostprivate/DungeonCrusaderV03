@@ -1,0 +1,1 @@
+{"all_sprites": {"properties": {}, "id": 9, "name": "Player", "type": null, "x": 112.0, "y": 64.0, "width": 16.0, "height": 16.0, "rotation": 0, "gid": 0, "visible": 1, "template": null, "size": [16.0, 16.0], "speed": 1000, "friction": 0.7, "hp": 3.0, "max_hp": 14.0, "mana": 10, "max_mana": 10, "state_name": "Moving", "anim_timer": 0, "anim_delay": 0.2, "anim_frame": 0}}
