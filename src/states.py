@@ -49,7 +49,7 @@ class Game_start(State):
     
     
     def startup(self):
-        self.game.map = tilemaps.Map(self.game, self.game.map_files[0])
+        self.game.map = tilemaps.Map(self.game, self.game.map_files[1])
         self.game.map.create_map()
         self.game.map.rect.topleft = (0, st.GUI_HEIGHT)
         
@@ -106,10 +106,13 @@ class In_game(State):
         self.game.screen.fill(pg.Color('black'))
         
         # draw map layers
+        # TODO: draw some layers above sprites
+        # (each sprite and map layer should have a layer number)
         for i, layer in enumerate(self.game.map.layers):
             self.game.screen.blit(layer, 
                                   self.game.camera.apply_bg(self.game.map.rect))
             # draw reflections
+            # TODO: have the layer have a "reflection" attribute
             if i == 0:
                 for sprite in self.game.all_sprites:
                     if hasattr(sprite, 'draw_reflection'):
@@ -140,7 +143,7 @@ class Title_screen(State):
         State.__init__(self, game)
         self.next = 'Game_start'
 
-        
+
     def get_event(self, event):
         # press any key to continue
         if event.type == pg.KEYDOWN or self.game.gamepad_controller.any_key():

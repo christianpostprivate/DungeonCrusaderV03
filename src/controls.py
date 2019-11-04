@@ -10,16 +10,16 @@ class KeyGetter():
         # mapping is a dict with 'name': pg.Key
         # default settings:
         self.keyboard_mapping = {
-                'RIGHT': pg.K_RIGHT,
-                'DOWN': pg.K_DOWN,
-                'LEFT': pg.K_LEFT,
-                'UP': pg.K_UP,
-                'A': pg.K_a,
-                'B': pg.K_b,
-                'X': pg.K_x,
-                'Y': pg.K_y,
-                'L': pg.K_l,
-                'R': pg.K_r,
+                'RIGHT': pg.K_d,
+                'DOWN': pg.K_s,
+                'LEFT': pg.K_a,
+                'UP': pg.K_w,
+                'A': pg.K_n,
+                'B': pg.K_m,
+                'X': pg.K_h,
+                'Y': pg.K_j,
+                'L': pg.K_q,
+                'R': pg.K_e,
                 'START': pg.K_RETURN,
                 'SELECT': pg.K_BACKSPACE
                 }
