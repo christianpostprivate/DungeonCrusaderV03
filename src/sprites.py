@@ -31,7 +31,7 @@ class State():
     def startup(self):
         self.sprite.image = self.images[0].copy()
         self.sprite.rect = self.sprite.image.get_rect()
-        self.sprite.rect.topleft = self.sprite.pos # only works when images are of the same size
+        self.sprite.rect.center = self.sprite.pos
     
     def cleanup(self):
         print(f'cleaning up {self.name}')
@@ -84,7 +84,7 @@ class Animated_sprite(pg.sprite.Sprite):
         if self.state.done:
             self.flip_state()
         self.state.update(dt)
-        
+
     
     def draw(self, screen, pos_or_rect):
         screen.blit(self.image, pos_or_rect)
@@ -98,11 +98,11 @@ class Animated_sprite(pg.sprite.Sprite):
             # reset the timer
             self.anim_timer = 0
             # advance the frame
-            self.anim_frame = (self.anim_frame + 1) % len(self.state.images)
+            self.anim_frame = (self.anim_frame + 1) % len(self.images)
             # set the image and adjust the rect
-            self.image = self.state.images[self.anim_frame]
+            self.image = self.images[self.anim_frame]
             self.rect = self.image.get_rect()
-            self.rect.topleft = self.pos
+            self.rect.midbottom = self.hitbox.midbottom
 
 
 
@@ -115,10 +115,11 @@ class Player(Animated_sprite):
         super().__init__(game, images, **kwargs)
         
         # physics properties
+        self.hitbox = pg.Rect(self.pos, st.PLAYER_HITBOX_SIZE)
         self.acc = vec()
         self.vel = vec()
-        self.speed = 1000
-        self.friction = 0.7
+        self.speed = 600
+        self.friction = 0.8 # TODO: change this to vector length
         
         # stats
         self.hp = 3.0
@@ -141,7 +142,7 @@ class Player(Animated_sprite):
             super().__init__(sprite.game, sprite)
             self.next = 'Test_state'
             
-            self.lastdir = DOWN
+            self.sprite.lastdir = DOWN
         
         
         def startup(self):
@@ -153,62 +154,64 @@ class Player(Animated_sprite):
             
         
         def update(self, dt):
-            self.sprite.animate(dt)
-            
-            keys = self.game.keys_pressed
-
-            self.sprite.acc *= 0
-            self.sprite.acc.x = keys['RIGHT'] - keys['LEFT']
-            self.sprite.acc.y = keys['DOWN'] - keys['UP']
-            if self.sprite.acc.length() > 1:
-                self.sprite.acc.scale_to_length(1)
-            self.sprite.vel += self.sprite.acc * self.sprite.speed * dt
-            self.sprite.vel *= self.sprite.friction
-            self.sprite.pos += self.sprite.vel * dt
-            self.sprite.rect.topleft = self.sprite.pos
-            
-            if self.sprite.vel.length() < 10:
-                self.sprite.vel *= 0
-                images = self.sprite.image_dict[self.name]
-                self.images = [images[self.lastdir]] # TODO: select the idle images
-            else:
-                images = self.sprite.image_dict[self.name]
-                if self.sprite.acc.x > 0:
-                    self.images = images[2:4]
-                    self.lastdir = RIGHT
-                elif self.sprite.acc.x < 0:
-                    self.images = images[6:8]
-                    self.lastdir = LEFT
-                if self.sprite.acc.y > 0:
-                    self.images = images[0:2]
-                    self.lastdir = DOWN
-                elif self.sprite.acc.y < 0:
-                    self.images = images[4:6]
-                    self.lastdir = UP
-            
+            self.sprite.move(self, dt)
             self.sprite.collide()
+            self.sprite.animate(dt)
         
 
     def update(self, dt):
         super().update(dt)
     
     
+    def move(self, state, dt):
+        keys = self.game.keys_pressed
+
+        self.acc *= 0
+        self.acc.x = keys['RIGHT'] - keys['LEFT']
+        self.acc.y = keys['DOWN'] - keys['UP']
+        if self.acc.length() > 1:
+            self.acc.scale_to_length(1)
+        self.vel += self.acc * self.speed * dt
+        self.vel *= self.friction
+        self.pos += self.vel * dt
+        
+        # select the images
+        if self.vel.length() < 10: #TODO: change to variable
+            self.vel *= 0
+            images = self.image_dict[state.name]
+            self.images = [images[self.lastdir]] # TODO: select the idle images
+        else:
+            images = self.image_dict[state.name]
+            if self.acc.x > 0:
+                self.images = images[2:4]
+                self.lastdir = RIGHT
+            elif self.acc.x < 0:
+                self.images = images[6:8]
+                self.lastdir = LEFT
+            if self.acc.y > 0:
+                self.images = images[0:2]
+                self.lastdir = DOWN
+            elif self.acc.y < 0:
+                self.images = images[4:6]
+                self.lastdir = UP
+    
+    
     def collide(self):
         # collision detection
-        self.rect = self.image.get_rect()
-        self.hitbox = pg.Rect((0, 0), st.PLAYER_HIT_RECT_SIZE)
-        self.hitbox.center = self.rect.center
-        
+        # the center of the hitbox is always at the sprite's position
         self.hitbox.centerx = self.pos.x
         utils.collide_with_walls(self, self.game.walls, 'x')
         self.hitbox.centery = self.pos.y
         utils.collide_with_walls(self, self.game.walls, 'y')
+        # the rect(where the image is drawn)'s bottom is aligned with the hitbox's bottom
+        self.rect.midbottom = self.hitbox.midbottom
 
         # position the rect at the bottom of the hitbox
         # leave 1 pixel space so that the game can detect collision
         # with solid objects
-        self.rect.midbottom = self.hitbox.midbottom
-        self.rect.bottom = self.hitbox.bottom + 1  
+        # TODO: does this still work?
+        #self.rect.midbottom = self.hitbox.midbottom
+        #self.rect.bottom = self.hitbox.bottom + 1  
     
 
     def draw_reflection(self, screen, rect):
@@ -221,12 +224,12 @@ class Player(Animated_sprite):
         
 
 
-class Wall:
+class Wall(pg.sprite.Sprite):
     ''' Invisible Wall object for collisions
     '''
     def __init__(self, game, **kwargs):
         self.game = game
-        self.game.walls.append(self)
+        super().__init__(game.walls)
         # TODO make this a parent class for non-Sprite Tilemap objects
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -235,7 +238,10 @@ class Wall:
             for key, value in self.properties.items():
                 setattr(self, key, value)
         
-        self.rect = pg.Rect(self.x, self.y, self.width, self.height)
+        self.image = pg.Surface((self.width, self.height), pg.SRCALPHA)
+        self.image.fill((0, 0, 0, 0))
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (self.x, self.y)
         self.hitbox = self.rect.copy()
     
     
@@ -244,5 +250,6 @@ class Wall:
     
     
     def draw(self, screen, rect):
-        pg.draw.rect(screen, pg.Color('Red'), rect, 1)
+        if self.game.debug_mode:
+            pg.draw.rect(screen, pg.Color('Red'), rect, 1)
         

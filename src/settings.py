@@ -2,6 +2,7 @@
 global game settings
 '''
 
+DEBUG = False
 
 # SCREEN AND GRAPHICS
 # size of the application window (in pixels)
@@ -40,4 +41,5 @@ PLAYER_HP_START = 14.0
 PLAYER_MAX_HP = 14.0
 PLAYER_HP_ROW = 7 # hearts per row
 
-PLAYER_HIT_RECT_SIZE = (13, 8)
+PLAYER_HITBOX_SIZE = (13, 8)
+PLAYER_HITBOX_SIZE = (16, 8)

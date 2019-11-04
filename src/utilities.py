@@ -13,37 +13,73 @@ def clamp(var, lower, upper):
     return max(lower, min(var, upper))
 
 
-def collide_hit_rect(one, two):
+def collide_hitbox(one, two):
     return one.hitbox.colliderect(two.hitbox)
 
+# =============================================================================
+# def collide_with_walls(sprite, group, dir_):
+#     if dir_ == 'x':
+#         hits = pg.sprite.spritecollide(sprite, group, False, collide_hitbox)
+#         if hits:
+#             wall = hits[0]
+#             # hit from left
+#             if wall.hitbox.centerx > sprite.hitbox.centerx:
+#                 sprite.pos.x = wall.hitbox.left - sprite.hitbox.w
+#             # hit from right
+#             elif wall.hitbox.centerx < sprite.hitbox.centerx:
+#                 sprite.pos.x = wall.hitbox.right
+#                             
+#             sprite.vel.x = 0
+#             sprite.hitbox.left = sprite.pos.x
+#             return True
+#             
+#     elif dir_ == 'y':
+#         hits = pg.sprite.spritecollide(sprite, group, False, collide_hitbox)
+#         if hits:
+#             wall = hits[0]
+#             # hit from top
+#             if wall.hitbox.centery > sprite.hitbox.centery:
+#                 sprite.pos.y = wall.hitbox.top - sprite.hitbox.h
+#             # hit from bottom
+#             elif wall.hitbox.centery < sprite.hitbox.centery:
+#                 sprite.pos.y = wall.hitbox.bottom
+#                 
+#             sprite.vel.y = 0
+#             sprite.hitbox.top = sprite.pos.y
+#             return True
+#     return False
+# 
+# =============================================================================
 
 def collide_with_walls(sprite, group, dir_):
     if dir_ == 'x':
-        hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
+        hits = pg.sprite.spritecollide(sprite, group, False, collide_hitbox)
         if hits:
+            wall = hits[0]
             # hit from left
-            if hits[0].hitbox.centerx > sprite.hitbox.centerx:
-                sprite.pos.x = hits[0].hitbox.left - sprite.hitbox.w
+            if wall.hitbox.centerx > sprite.hitbox.centerx:
+                sprite.pos.x = wall.hitbox.left - sprite.hitbox.w / 2
             # hit from right
-            elif hits[0].hitbox.centerx < sprite.hitbox.centerx:
-                sprite.pos.x = hits[0].hitbox.right
+            elif wall.hitbox.centerx < sprite.hitbox.centerx:
+                sprite.pos.x = wall.hitbox.right + sprite.hitbox.w / 2
                             
             sprite.vel.x = 0
-            sprite.hitbox.left = sprite.pos.x
+            sprite.hitbox.centerx = sprite.pos.x
             return True
             
     elif dir_ == 'y':
-        hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
+        hits = pg.sprite.spritecollide(sprite, group, False, collide_hitbox)
         if hits:
+            wall = hits[0]
             # hit from top
-            if hits[0].hitbox.centery > sprite.hitbox.centery:
-                sprite.pos.y = hits[0].hitbox.top - sprite.hitbox.h
+            if wall.hitbox.centery > sprite.hitbox.centery:
+                sprite.pos.y = wall.hitbox.top - sprite.hitbox.h / 2
             # hit from bottom
-            elif hits[0].hitbox.centery < sprite.hitbox.centery:
-                sprite.pos.y = hits[0].hitbox.bottom
+            elif wall.hitbox.centery < sprite.hitbox.centery:
+                sprite.pos.y = wall.hitbox.bottom + sprite.hitbox.h / 2
                 
             sprite.vel.y = 0
-            sprite.hitbox.top = sprite.pos.y
+            sprite.hitbox.centery = sprite.pos.y
             return True
     return False
 

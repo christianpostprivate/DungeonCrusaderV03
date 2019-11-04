@@ -9,6 +9,20 @@ from load_assets import Loader
 import controls
 import utilities as utils
 
+'''
+# TODO list:
+(import stuff from dungeon crusader v1)
+- item system:
+    - sword
+    - potions
+    - hookshot (re-vamp)
+    - bombs
+    - magic wand
+- enemies
+- collectable items (rupees, hearts)
+- dungeon traps (pitfalls, spikes etc)
+
+'''
 
 class Game():
     def __init__(self):
@@ -25,7 +39,7 @@ class Game():
         self.fps = st.FPS
         self.all_sprites = pg.sprite.Group()
         self.gui_elements = pg.sprite.Group()
-        self.walls = []
+        self.walls = pg.sprite.Group()
         
         self.fonts = {
                 'default': pg.font.SysFont(st.DEFAULT_FONT, 18)
@@ -33,7 +47,8 @@ class Game():
         
         self.base_dir = os.path.join(os.path.dirname( __file__ ), '..')
         
-        self.map_files = ['sample_map.tmx']
+        self.map_files = ['sample_map.tmx',
+                          'sample_map2.tmx']
         self.map_files = [os.path.join(self.base_dir, 'data', 'tilemaps', m) 
                           for m in self.map_files] #TODO: this belongs in load_assets.py
         self.save_dir = os.path.join(self.base_dir, 'data', 'saves')
@@ -48,7 +63,7 @@ class Game():
         
         self.setup_states()
         
-        self.debug_mode = False
+        self.debug_mode = st.DEBUG
     
     
     def setup_states(self):
@@ -57,6 +72,7 @@ class Game():
         # define the state at the start of the program
         self.state_name = 'Title_screen'
         self.state = self.state_dict[self.state_name](self)
+        self.state.startup()
     
     
     def flip_state(self):
@@ -114,6 +130,9 @@ class Game():
         if self.state.done:
             self.flip_state()
         self.state.update(dt)
+        
+        current_fps = self.clock.get_fps()
+        pg.display.set_caption(f'FPS: {current_fps:2.2f}/{st.FPS} ({current_fps/st.FPS * 100:.1f} %)')
 
 
     def draw(self):
