@@ -103,31 +103,31 @@ class In_game(State):
               
         
     def draw(self):
-        self.game.screen.fill(pg.Color('black'))
+        #self.game.game_screen.fill(pg.Color('black'))
         
         # draw map layers
         # TODO: draw some layers above sprites
         # (each sprite and map layer should have a layer number)
         for i, layer in enumerate(self.game.map.layers):
-            self.game.screen.blit(layer, 
+            self.game.game_screen.blit(layer, 
                                   self.game.camera.apply_bg(self.game.map.rect))
             # draw reflections
             # TODO: have the layer have a "reflection" attribute
             if i == 0:
                 for sprite in self.game.all_sprites:
                     if hasattr(sprite, 'draw_reflection'):
-                        sprite.draw_reflection(self.game.screen, 
+                        sprite.draw_reflection(self.game.game_screen, 
                                                self.game.camera.apply(sprite))
         
         for sprite in self.game.all_sprites:
-            sprite.draw(self.game.screen, self.game.camera.apply(sprite))
+            sprite.draw(self.game.game_screen, self.game.camera.apply(sprite))
             if self.game.debug_mode:
                 if hasattr(sprite, 'hitbox'):
-                    pg.draw.rect(self.game.screen, pg.Color('Red'), 
+                    pg.draw.rect(self.game.game_screen, pg.Color('Red'), 
                                  self.game.camera.apply_rect(sprite.hitbox), 1)
         
         for wall in self.game.walls:
-            wall.draw(self.game.screen, self.game.camera.apply(wall))
+            wall.draw(self.game.game_screen, self.game.camera.apply(wall))
         
         for elem in self.game.gui_elements:
             elem.draw()
@@ -155,12 +155,12 @@ class Title_screen(State):
               
         
     def draw(self):
-        self.game.screen.fill(pg.Color('red'))
+        self.game.game_screen.fill(pg.Color('red'))
         txt = 'Template game. Press any key to start.'
         txt_surf = self.game.fonts['default'].render(txt, False, pg.Color('white'))
         txt_rect = txt_surf.get_rect()
-        txt_rect.center = self.game.screen_rect.center
-        self.game.screen.blit(txt_surf, txt_rect)
+        txt_rect.center = self.game.game_screen_rect.center
+        self.game.game_screen.blit(txt_surf, txt_rect)
         
 
 

@@ -28,14 +28,20 @@ class Game():
     def __init__(self):
         pg.init()
         self.clock = pg.time.Clock()
-        self.actual_screen = pg.display.set_mode((st.WINDOW_W, st.WINDOW_H))
-        self.screen = pg.Surface((st.GAME_SCREEN_W, st.GAME_SCREEN_H))
+        # application window surface
+        self.app_screen = pg.display.set_mode((st.WINDOW_W, st.WINDOW_H),
+                                              *st.WINDOW_FLAGS)
+        # game screen surface (where all the ingame stuff gets blitted on)
+        self.game_screen = pg.Surface((st.GAME_SCREEN_W, st.GAME_SCREEN_H))
+        # world screen (game screen minus the GUI overlay)
         self.world_screen = pg.Surface((st.GAME_SCREEN_W, 
                                         st.GAME_SCREEN_H - st.GUI_HEIGHT))
-        self.screen_rect = self.screen.get_rect()
+        # define screen rects for later use
+        self.app_screen_rect = self.app_screen.get_rect()
+        self.game_screen_rect = self.game_screen.get_rect()
         self.world_screen_rect = self.world_screen.get_rect()
         self.world_screen_rect.topleft = (0, st.GUI_HEIGHT)
-        self.display_rect = self.actual_screen.get_rect()
+        
         self.fps = st.FPS
         self.all_sprites = pg.sprite.Group()
         self.gui_elements = pg.sprite.Group()
@@ -116,6 +122,15 @@ class Game():
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_F12:
                     self.debug_mode = not self.debug_mode
+            elif event.type == pg.VIDEORESIZE:
+                # if the user resizes the window (drag the bottom right corner)
+                # get the new size from the event dict and reset the 
+                # window screen surface
+                self.app_screen = pg.display.set_mode(event.dict['size'],
+                                                      *st.WINDOW_FLAGS)
+                self.app_screen_rect = self.app_screen.get_rect()
+                pg.display.update()
+                
             self.state.get_event(event)
 
 
@@ -139,18 +154,51 @@ class Game():
         # draw everything that happens in the current state
         self.state.draw()
         
-        # transform the drawing surface to the window size
-        transformed_screen = pg.transform.scale(self.screen,(st.WINDOW_W, 
-                                                             st.WINDOW_H))
-        # blit the drawing surface to the application window
-        self.actual_screen.blit(transformed_screen, (0, 0))
-        pg.display.update()
+        if st.WINDOW_STRETCHED:
+            # scale the game screen to the window size
+            resized_screen = pg.transform.scale(self.game_screen, self.app_screen_rect.size)
+        else:
+            # compare aspect ratios
+            game_ratio = self.game_screen_rect.w / self.game_screen_rect.h
+            app_ratio = self.app_screen_rect.w / self.app_screen_rect.h
+
+            if game_ratio < app_ratio:
+                if self.game_screen_rect.h >= self.app_screen_rect.h:
+                    width = int(self.app_screen_rect.h / self.game_screen_rect.h 
+                            * self.game_screen_rect.w)
+                    height = self.app_screen_rect.h
+                else:
+                    width = int(self.app_screen_rect.h / self.game_screen_rect.h 
+                            * self.game_screen_rect.w)
+                    height = self.app_screen_rect.h
+            else:
+                if self.game_screen_rect.h < self.app_screen_rect.h:
+                    width = self.app_screen_rect.w
+                    height = int(self.app_screen_rect.w / self.game_screen_rect.w
+                             * self.game_screen_rect.h)
+                else:
+                    width = self.app_screen_rect.w
+                    height = int(self.app_screen_rect.w / self.game_screen_rect.w
+                             * self.game_screen_rect.h)
+            resized_screen = pg.transform.scale(self.game_screen, 
+                                                (width, height))
+        
+        
+        # get the rect of the resized screen for blitting
+        # and center it to the window screen
+        res_screen_rect = resized_screen.get_rect()
+        res_screen_rect.center = self.app_screen_rect.center
+
+        self.app_screen.blit(resized_screen, res_screen_rect)
+
+        pg.display.update(res_screen_rect)
 
 
     def run(self):
         self.running = True
         while self.running:
-            delta_time = self.clock.tick(self.fps) / 1000 # "dt"
+            #delta_time = self.clock.tick(self.fps) / 1000 # "dt"
+            delta_time = self.clock.tick() / 1000 # "dt"
             self.events()
             self.update(delta_time)
             self.draw()

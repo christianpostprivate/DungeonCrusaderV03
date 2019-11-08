@@ -53,7 +53,7 @@ class Map():
                     if obj.name in sprites:
                         # check if the sprite exists in sprites.py
                         # if so, instantiate the sprite
-                        sprites[obj.name](self.game, **obj.__dict__)
+                        sprites[obj.name](self.game, obj.__dict__)
                     else:
                         print(f'No sprite "{obj.name}" found in sprites module')
 
