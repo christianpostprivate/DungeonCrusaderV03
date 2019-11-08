@@ -76,7 +76,7 @@ class Inventory(pg.sprite.Sprite):
         self.draw_cursor()
         self.draw_hud()
         
-        self.game.screen.blit(self.image, self.rect)
+        self.game.game_screen.blit(self.image, self.rect)
         
     
     def draw_cursor(self):
@@ -138,16 +138,13 @@ class Inventory(pg.sprite.Sprite):
         font_size = 8
         x_off = 167
         text_pos = vec(x_off, 201)
-        # TODO: f-string this
-        number = 'x10'
-        #number = 'x%03d' % self.game.player.item_counts['rupee']
+        number = f'x{self.game.player.item_counts.get("rupee", 0):02d}'
         utils.draw_text(self.image, number, font, font_size, pg.Color('White'), 
                         text_pos, align='midleft')
         
         # keys
         text_pos = vec(x_off, 217)
-        number = 'x05'
-        #number = 'x %02d' % self.game.player.item_counts['small key']
+        number = f'x{self.game.player.item_counts.get("small_key", 0):02d}'
         utils.draw_text(self.image, number, font, font_size, pg.Color('White'), 
                         text_pos, align='midleft')
         

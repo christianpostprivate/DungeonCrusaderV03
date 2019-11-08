@@ -16,40 +16,6 @@ def clamp(var, lower, upper):
 def collide_hitbox(one, two):
     return one.hitbox.colliderect(two.hitbox)
 
-# =============================================================================
-# def collide_with_walls(sprite, group, dir_):
-#     if dir_ == 'x':
-#         hits = pg.sprite.spritecollide(sprite, group, False, collide_hitbox)
-#         if hits:
-#             wall = hits[0]
-#             # hit from left
-#             if wall.hitbox.centerx > sprite.hitbox.centerx:
-#                 sprite.pos.x = wall.hitbox.left - sprite.hitbox.w
-#             # hit from right
-#             elif wall.hitbox.centerx < sprite.hitbox.centerx:
-#                 sprite.pos.x = wall.hitbox.right
-#                             
-#             sprite.vel.x = 0
-#             sprite.hitbox.left = sprite.pos.x
-#             return True
-#             
-#     elif dir_ == 'y':
-#         hits = pg.sprite.spritecollide(sprite, group, False, collide_hitbox)
-#         if hits:
-#             wall = hits[0]
-#             # hit from top
-#             if wall.hitbox.centery > sprite.hitbox.centery:
-#                 sprite.pos.y = wall.hitbox.top - sprite.hitbox.h
-#             # hit from bottom
-#             elif wall.hitbox.centery < sprite.hitbox.centery:
-#                 sprite.pos.y = wall.hitbox.bottom
-#                 
-#             sprite.vel.y = 0
-#             sprite.hitbox.top = sprite.pos.y
-#             return True
-#     return False
-# 
-# =============================================================================
 
 def collide_with_walls(sprite, group, dir_):
     if dir_ == 'x':

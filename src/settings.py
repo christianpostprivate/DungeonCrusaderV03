@@ -2,6 +2,8 @@
 global game settings
 '''
 
+from pygame.locals import FULLSCREEN, RESIZABLE
+
 DEBUG = False
 
 # SCREEN AND GRAPHICS
@@ -17,11 +19,22 @@ GAME_SCREEN_TILES_HIGH = 12
 GUI_MARGIN = 1
 GUI_HEIGHT = TILE_HEIGHT * 3
 # calculate game screen size (original pixel size)
-GAME_SCREEN_W = TILE_WIDTH * GAME_SCREEN_TILES_WIDE
-GAME_SCREEN_H = TILE_HEIGHT * GAME_SCREEN_TILES_HIGH + GUI_HEIGHT
+GAME_SCREEN_W = TILE_WIDTH * GAME_SCREEN_TILES_WIDE  # should be 256
+GAME_SCREEN_H = TILE_HEIGHT * GAME_SCREEN_TILES_HIGH + GUI_HEIGHT  # should be 240
 # scale game screen to actual window size
 WINDOW_W = GAME_SCREEN_W * WINDOW_SCALE
 WINDOW_H = GAME_SCREEN_H * WINDOW_SCALE
+
+print(GAME_SCREEN_W, GAME_SCREEN_H)
+
+WINDOW_FLAGS = [
+    RESIZABLE,
+    #FULLSCREEN
+    ]
+    
+# whether the game screen gets resized to the same aspect ratio as the window 
+WINDOW_STRETCHED = False 
+
 # Frames per second
 FPS = 30
 
