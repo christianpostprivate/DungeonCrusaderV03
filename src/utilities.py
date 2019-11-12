@@ -98,7 +98,7 @@ class Camera():
         self.prev_qw = 0
         self.prev_qh = 0
         
-        self.slide_speed = 0.05 # percent, change this to dt
+        self.slide_speed = 2
         self.slide_amount = 0
 
 
@@ -118,7 +118,7 @@ class Camera():
         return point - vec(self.rect.x, self.rect.y + st.GUI_HEIGHT)
 
 
-    def update(self, target):
+    def update(self, target, dt):
         if self.mode == 'FOLLOW':
             x = -target.rect.x + self.game.world_screen_rect.w // 2
             y = -target.rect.y + self.game.world_screen_rect.h // 2 + st.GUI_HEIGHT
@@ -152,7 +152,7 @@ class Camera():
             if qw != self.prev_qw or qh != self.prev_qh:
                 self.is_sliding = True
                 
-                self.slide_amount += self.slide_speed
+                self.slide_amount += self.slide_speed * dt
                 self.slide_amount = min(self.slide_amount, 1)
                 between = self.prev_pos.lerp(self.target_pos, self.slide_amount)
                 

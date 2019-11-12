@@ -89,7 +89,7 @@ class In_game(State):
         if not self.game.camera.is_sliding:
             self.game.all_sprites.update(dt)
             self.game.gui_elements.update(dt)
-        self.game.camera.update(self.game.player)
+        self.game.camera.update(self.game.player, dt)
         
 # =============================================================================
 #         if self.game.keydown['A']:
@@ -156,10 +156,25 @@ class Title_screen(State):
         
     def draw(self):
         self.game.game_screen.fill(pg.Color('red'))
-        txt = 'Template game. Press any key to start.'
-        txt_surf = self.game.fonts['default'].render(txt, False, pg.Color('white'))
-        txt_rect = txt_surf.get_rect()
-        txt_rect.center = self.game.game_screen_rect.center
+        
+        txt = 'DUNGEON CRUSADER'
+        txt_surf, txt_rect = self.game.fonts['default_big'].render(txt, 
+                                                    fgcolor=pg.Color('White'),
+                                                    bgcolor=None)
+                                                    
+        txt_rect.centerx = self.game.game_screen_rect.centerx
+        txt_rect.centery = self.game.game_screen_rect.centery - 16
+        
+        self.game.game_screen.blit(txt_surf, txt_rect)
+        
+        txt = 'Press any key to start.'
+        txt_surf, txt_rect = self.game.fonts['default_small'].render(txt, 
+                                                    fgcolor=pg.Color('White'),
+                                                    bgcolor=None)
+                                                    
+        txt_rect.centerx = self.game.game_screen_rect.centerx
+        txt_rect.centery = self.game.game_screen_rect.centery + 16
+        
         self.game.game_screen.blit(txt_surf, txt_rect)
         
 
@@ -181,9 +196,9 @@ class Menu_open(In_game):
         # call menu opening animation
         # that returns True if its finished
         self.game.gui_elements.update(dt)
-        self.game.camera.update(self.game.player)
+        self.game.camera.update(self.game.player, dt)
         
-        if self.game.inventory.menu_open():
+        if self.game.inventory.menu_open(dt):
             self.done = True
     
     
@@ -208,9 +223,9 @@ class Menu_close(In_game):
         # call menu closing animation
         # that returns True if its finished
         self.game.gui_elements.update(dt)
-        self.game.camera.update(self.game.player)
+        self.game.camera.update(self.game.player, dt)
         
-        if self.game.inventory.menu_close():
+        if self.game.inventory.menu_close(dt):
             self.done = True
     
     

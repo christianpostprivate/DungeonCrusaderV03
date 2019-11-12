@@ -149,20 +149,19 @@ class Inventory(pg.sprite.Sprite):
                         text_pos, align='midleft')
         
     
-    def menu_open(self):
-        # TODO: add dt calculation
+    def menu_open(self, dt):
         if self.rect.y != 0:
-            self.rect.y += st.SCROLLSPEED_MENU
+            self.rect.y += st.SCROLLSPEED_MENU * dt
             self.rect.y = min(0, self.rect.y)
             return False
         else:
             return True
             
     
-    def menu_close(self):
+    def menu_close(self, dt):
         if self.rect.y != self.start_pos.y:
-            self.rect.y -= st.SCROLLSPEED_MENU
-            self.rect.y = min(0, self.rect.y)
+            self.rect.y -= st.SCROLLSPEED_MENU * dt
+            self.rect.y = max(st.GUI_HEIGHT - self.rect.h, self.rect.y)
             return False
         else:
             return True

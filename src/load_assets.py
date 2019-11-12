@@ -29,35 +29,27 @@ class Loader():
         '''
         load sprite image strips here
         '''
-        
-        #TODO: search for filenames automatically
-        sprite_files = ['knight_strip.png']
-        
-        sprite_images = [pg.image.load(os.path.join(self.sprite_folder, f)).convert_alpha() 
-                         for f in sprite_files]
-        
-        gui_image_files = ['inventory_bg.png',
-                           'cursor.png',
-                           'health_string.png',
-                           'hearts_strip.png',
-                           'magicbar.png',
-                           'arrows.png',
-                           'minimap_strip_7x5.png',
-                           'magic_and_items.png']
-        
-        gui_images = [pg.image.load(os.path.join(self.gui_image_folder, f)).convert_alpha()
-                      for f in gui_image_files]
+        sprite_files = list(filter(lambda x: x[-3:]=='png', os.listdir(self.sprite_folder)))
+        sprite_images = {f[:-4] : pg.image.load(os.path.join(self.sprite_folder, f)).convert_alpha() 
+                         for f in sprite_files}
+
+        gui_image_files = list(filter(lambda x: x[-3:]=='png', 
+                                      os.listdir(self.gui_image_folder)))
+        gui_images = {f[:-4] : pg.image.load(os.path.join(self.gui_image_folder, f)).convert_alpha()
+                      for f in gui_image_files}
         
         gfx_lib = {
-                'knight_images': self.images_from_strip(sprite_images[0], 10),
-                'inventory_bg': gui_images[0],
-                'cursor_images': self.images_from_strip(gui_images[1], 2),
-                'health_string': gui_images[2],
-                'heart_images': self.images_from_strip(gui_images[3], 6),
-                'magicbar': gui_images[4],
-                'arrows': self.images_from_strip(gui_images[5], 4),
-                'minimap_images': self.images_from_strip(gui_images[6], 20),
-                'magic_and_items': gui_images[7]
+                'knight_images': self.images_from_strip(sprite_images['knight_strip'], 10),
+                'knight_attack': self.images_from_strip(sprite_images['knight_attack'], 4),
+                'sword_anim': self.images_from_strip(sprite_images['sword_anim'], 16),
+                'inventory_bg': gui_images['inventory_bg'],
+                'cursor_images': self.images_from_strip(gui_images['cursor'], 2),
+                'health_string': gui_images['health_string'],
+                'heart_images': self.images_from_strip(gui_images['hearts_strip'], 6),
+                'magicbar': gui_images['magicbar'],
+                'arrows': self.images_from_strip(gui_images['arrows'], 4),
+                'minimap_images': self.images_from_strip(gui_images['minimap_strip_7x5'], 20),
+                'magic_and_items': gui_images['magic_and_items']
                 }
         
         return gfx_lib
@@ -66,27 +58,28 @@ class Loader():
     def load_sounds(self):
         pg.mixer.init()
         
-        music_files = [
-                'A_Journey_Awaits.mp3',
-                'Memoraphile_Spooky_Dungeon.ogg'
-                ]
-        sfx_files = [
-                'Pickup_Coin35.wav'
-                ]
-
-        music_objects = [os.path.join(self.sounds_folder, 'bgm', f)
-                         for f in music_files]     
-        sfx_objects = [pg.mixer.Sound(os.path.join(self.sounds_folder, 'sfx', f))
-                        for f in sfx_files]
+        bgm_folder = os.path.join(self.sounds_folder, 'bgm')
+        sfx_folder = os.path.join(self.sounds_folder, 'sfx')
+        
+        music_files = list(filter(lambda x: x[-3:]=='mp3' or x[-3:]=='ogg', 
+                                  os.listdir(bgm_folder)))
+        music_objects = {f[:-4]: os.path.join(bgm_folder, f)
+                         for f in music_files}
+        
+        sfx_files = list(filter(lambda x: x[-3:]=='mp3' or x[-3:]=='wav', 
+                                  os.listdir(sfx_folder)))
+        sfx_objects = {f[:-4]: pg.mixer.Sound(os.path.join(sfx_folder, f))
+                        for f in sfx_files}
         
         # sound libs stored as (filename, relative volume)
         self.music_lib = {
-                'overworld': (music_objects[0], 0.9),
-                'dungeon1': (music_objects[1], 0.8)
+                'overworld': (music_objects['A_Journey_Awaits'], 0.9),
+                'dungeon1': (music_objects['Memoraphile_Spooky_Dungeon'], 0.8)
                 }
         
         self.sfx_lib = {
-                'test_sound': (sfx_objects[0], 1)
+                'test_sound': (sfx_objects['Pickup_Coin35'], 1),
+                'sword_slash': (sfx_objects['slash'], 1)
                 }
         
         

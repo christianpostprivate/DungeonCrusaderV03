@@ -1,6 +1,7 @@
 import pygame as pg
 #from random import randint
 
+import items
 import settings as st
 import utilities as utils
 
@@ -13,8 +14,6 @@ LEFT = 2
 UP = 3
 
 
-# TODO: make seperate parent classes for Sprite and animated sprite
-
 class State():
     ''' base class for player/NPC state machine '''
     def __init__(self, game, sprite):
@@ -25,16 +24,10 @@ class State():
         self.previous = None # the state that was executed before
         self.name = self.sprite.state_name
         
-        # get the image list for this state
-        self.images = [image.copy() for image in self.sprite.image_dict[self.name]]
-        
     def startup(self):
-        self.sprite.image = self.images[0].copy()
-        self.sprite.rect = self.sprite.image.get_rect()
-        self.sprite.rect.center = self.sprite.pos
+        pass
     
     def cleanup(self):
-        print(f'cleaning up {self.name}')
         pass
     
     def update(self, dt):
@@ -67,6 +60,17 @@ class BaseSprite(pg.sprite.Sprite):
         self.anim_delay = 0.2 # overwrite this in child class
     
     
+    def flip_state(self):
+        '''set the state to the next if the current state is done'''
+        self.state.done = False
+        # set the current and next state to the previous and current state
+        previous, self.state_name = self.state_name, self.state.next
+        self.state.cleanup()
+        self.state = self.state_dict[self.state_name](self)
+        self.state.startup()
+        self.state.previous = previous
+    
+    
     def animate(self, dt):
         # loop through all of self.images and set self.image to the next
         # image if the time exceeds the delay
@@ -82,73 +86,14 @@ class BaseSprite(pg.sprite.Sprite):
             self.rect.midbottom = self.hitbox.midbottom
     
     
+    def update(self, dt):
+        self.state.update(dt)
+        if self.state.done:
+            self.flip_state()
+            
+    
     def draw(self, screen, pos_or_rect):
         screen.blit(self.image, pos_or_rect)
-    
-    
-
-# =============================================================================
-# class Animated_sprite(pg.sprite.Sprite):
-#     ''' sprite class with a list of images that animate'''
-#     def __init__(self, game, images, **kwargs):
-#         self.game = game
-#         super().__init__(game.all_sprites)
-#         for key, value in kwargs.items():
-#             setattr(self, key, value)
-#         # set additional custom properties (from Tiled 'properties' dict)
-#         if hasattr(self, 'properties'):
-#             for key, value in self.properties.items():
-#                 setattr(self, key, value)
-#                 
-#         try:
-#             # try accessing to width and height
-#             # if this fails, take the default tile size
-#             self.size = (self.width, self.height)
-#         except AttributeError:
-#             self.width = st.TILE_WIDTH
-#             self.height = st.TILE_HEIGHT
-#             self.size = (self.width, self.height)
-#         self.pos = (self.x, self.y)
-#         
-#         if images:
-#             self.image_dict = images
-# 
-#     
-#     def flip_state(self):
-#         '''set the state to the next if the current state is done'''
-#         self.state.done = False
-#         # set the current and next state to the previous and current state
-#         previous, self.state_name = self.state_name, self.state.next
-#         self.state.cleanup()
-#         self.state = self.state_dict[self.state_name](self)
-#         self.state.startup()
-#         self.state.previous = previous
-#         
-#     
-#     def update(self, dt):
-#         if self.state.done:
-#             self.flip_state()
-#         self.state.update(dt)
-# 
-#     
-#     def draw(self, screen, pos_or_rect):
-#         screen.blit(self.image, pos_or_rect)
-#     
-#     
-#     def animate(self, dt):
-#         # loop through all of self.images and set self.image to the next
-#         # image if the time exceeds the delay
-#         self.anim_timer += dt
-#         if self.anim_timer >= self.anim_delay:
-#             # reset the timer
-#             self.anim_timer = 0
-#             # advance the frame
-#             self.anim_frame = (self.anim_frame + 1) % len(self.images)
-#             # set the image and adjust the rect
-#             self.image = self.images[self.anim_frame]
-#             self.rect = self.image.get_rect()
-#             self.rect.midbottom = self.hitbox.midbottom
-# =============================================================================
 
 
 
@@ -159,6 +104,7 @@ class Player(BaseSprite):
         super().__init__(game, game.all_sprites, **kwargs)
         
         images1 = game.graphics['knight_images']
+        images2 = game.graphics['knight_attack']
         self.images = {
             'hit': None, #TODO
             'idle': {
@@ -172,6 +118,12 @@ class Player(BaseSprite):
                     DOWN: images1[0:2],
                     LEFT: images1[6:8],
                     UP: images1[4:6]
+                    },
+            'attack': {
+                    RIGHT: images2[2:3],
+                    DOWN: images2[0:1],
+                    LEFT: images2[3:4],
+                    UP: images2[1:2],
                     }
             }
         
@@ -205,44 +157,95 @@ class Player(BaseSprite):
                 'rupee': 0
                 }
         
-# =============================================================================
-#         # setup state machine
-#         self.state_dict = {
-#                 'Moving': self.Moving
-#                 }
-#         self.state_name = 'Moving'
-#         self.state = self.state_dict[self.state_name](self)
-#         self.state.startup()
-# =============================================================================
-    
-    
-# =============================================================================
-#     class Moving(State):
-#         ''' this is the default state for the player '''
-#         def __init__(self, sprite):
-#             super().__init__(sprite.game, sprite)
-#             self.next = 'Test_state'
-#             
-#             self.sprite.lastdir = DOWN
-#         
-#         
-#         def startup(self):
-#             super().startup()
-#             
-#             self.sprite.anim_timer = 0 # time in seconds
-#             self.sprite.anim_delay = 0.2 # animation delay in seconds
-#             self.sprite.anim_frame = 0 # current index of the images list
-#             
-#         
-#         def update(self, dt):
-#             self.sprite.move(self, dt)
-#             self.sprite.collide()
-#             self.sprite.animate(dt)
-# =============================================================================
+        self.items = {
+                'A': items.Sword,
+                'B': None
+                }
+        self.item_using = None
         
+        # setup state machine
+        self.state_dict = {
+                'moving': self.Moving,
+                'USE_A': self.Use_item_A,
+                'USE_B': self.Use_item_B
+                }
+        self.state_name = 'moving'
+        self.state = self.state_dict[self.state_name](self)
+        self.state.startup()
+    
+    
+    class Moving(State):
+        ''' this is the default state for the player '''
+        def __init__(self, sprite):
+            super().__init__(sprite.game, sprite)
+            self.next = None
+        
+        
+        def startup(self):
+            super().startup()
+            
+            self.anim_timer = 0
+            self.anim_frame = 0
+            self.anim_delay = 0.2
+            
+        
+        def update(self, dt):
+            self.sprite.move(dt)
+            self.sprite.collide_with_walls()
+            self.sprite.animate(dt)
+            
+            if self.game.keydown['A']:
+                self.next = 'USE_A'
+                self.done = True
+            if self.game.keydown['B']:
+                self.next = 'USE_B'
+                self.done = True
+    
+    
+    class Use_item(State):
+        '''parent class for Item using state'''
+        def __init__(self, sprite):
+            super().__init__(sprite.game, sprite)
+            self.next = 'moving'
+        
+        def startup(self):
+            super().startup()
+            self.sprite.vel *= 0
+            self.sprite.image_state = 'attack'
+            self.item = self.sprite.items[self.slot](self.sprite, self.game)
+            
+        
+        def update(self, dt):
+            self.sprite.animate(dt)
+            if self.item.done:
+                self.done = True
+    
+    
+    class Use_item_A(Use_item):
+        def __init__(self, sprite):
+            super().__init__(sprite)
+            self.slot = 'A'
 
-    def update(self, dt):
-        # TODO: change to state.update
+                
+    class Use_item_B(Use_item):
+        def __init__(self, sprite):
+            super().__init__(sprite)
+            self.slot = 'B'
+
+    
+    
+    def collide_with_walls(self):
+        # collision detection
+        # the center of the hitbox is always at the sprite's position
+        self.hitbox.centerx = self.pos.x
+        utils.collide_with_walls(self, self.game.walls, 'x')
+        self.hitbox.centery = self.pos.y
+        utils.collide_with_walls(self, self.game.walls, 'y')
+        # the rect(where the image is drawn)'s bottom is aligned with the hitbox's bottom
+        self.rect.midbottom = self.hitbox.midbottom
+    
+    
+    def move(self, dt):
         keys = self.game.keys_pressed
         
         self.acc *= 0
@@ -275,17 +278,6 @@ class Player(BaseSprite):
         self.images[self.image_state][self.lastdir]
         
         self.pos += self.vel
-        
-        # collision detection
-        # the center of the hitbox is always at the sprite's position
-        self.hitbox.centerx = self.pos.x
-        utils.collide_with_walls(self, self.game.walls, 'x')
-        self.hitbox.centery = self.pos.y
-        utils.collide_with_walls(self, self.game.walls, 'y')
-        # the rect(where the image is drawn)'s bottom is aligned with the hitbox's bottom
-        self.rect.midbottom = self.hitbox.midbottom
-        
-        self.animate(dt)
     
 
     def draw_reflection(self, screen, rect):

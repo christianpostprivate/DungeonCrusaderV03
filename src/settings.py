@@ -2,7 +2,7 @@
 global game settings
 '''
 
-from pygame.locals import FULLSCREEN, RESIZABLE
+from pygame.locals import FULLSCREEN, RESIZABLE, DOUBLEBUF
 
 DEBUG = False
 
@@ -25,18 +25,17 @@ GAME_SCREEN_H = TILE_HEIGHT * GAME_SCREEN_TILES_HIGH + GUI_HEIGHT  # should be 2
 WINDOW_W = GAME_SCREEN_W * WINDOW_SCALE
 WINDOW_H = GAME_SCREEN_H * WINDOW_SCALE
 
-print(GAME_SCREEN_W, GAME_SCREEN_H)
-
-WINDOW_FLAGS = [
-    RESIZABLE,
+WINDOW_FLAGS = (
+    RESIZABLE |
+    DOUBLEBUF
     #FULLSCREEN
-    ]
+    )
     
 # whether the game screen gets resized to the same aspect ratio as the window 
 WINDOW_STRETCHED = False 
 
 # Frames per second
-FPS = 30
+FPS = 0
 
 DEFAULT_FONT = 'Arial'
 
@@ -47,7 +46,7 @@ SFX_VOLUME = 0.6
 
 
 # ingame settings
-SCROLLSPEED_MENU = 12 #TODO: make this dt dependent
+SCROLLSPEED_MENU = 400
 
 # player stats
 PLAYER_HP_START = 14.0
