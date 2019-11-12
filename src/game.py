@@ -1,4 +1,5 @@
 import pygame as pg
+import pygame.freetype
 import inspect
 import os
 import json
@@ -21,6 +22,8 @@ import utilities as utils
 - enemies
 - collectable items (rupees, hearts)
 - dungeon traps (pitfalls, spikes etc)
+- menu in title screen (screen resolution, fullscreen, fixed FPS etc)
+    --> Menu module for UI templates
 
 '''
 
@@ -29,8 +32,9 @@ class Game():
         pg.init()
         self.clock = pg.time.Clock()
         # application window surface
+        self.window_flags = st.WINDOW_FLAGS
         self.app_screen = pg.display.set_mode((st.WINDOW_W, st.WINDOW_H),
-                                              *st.WINDOW_FLAGS)
+                                              self.window_flags)
         # game screen surface (where all the ingame stuff gets blitted on)
         self.game_screen = pg.Surface((st.GAME_SCREEN_W, st.GAME_SCREEN_H))
         # world screen (game screen minus the GUI overlay)
@@ -48,15 +52,18 @@ class Game():
         self.walls = pg.sprite.Group()
         
         self.fonts = {
-                'default': pg.font.SysFont(st.DEFAULT_FONT, 18)
+                'default_big': pygame.freetype.Font(file=None, size=22),
+                'default_small': pygame.freetype.Font(file=None, size=14)
                 }
+        for f in self.fonts.values():
+            f.antialiased = False
         
         self.base_dir = os.path.join(os.path.dirname( __file__ ), '..')
         
         self.map_files = ['sample_map.tmx',
                           'sample_map2.tmx']
         self.map_files = [os.path.join(self.base_dir, 'data', 'tilemaps', m) 
-                          for m in self.map_files] #TODO: this belongs in load_assets.py
+                          for m in self.map_files] #TODO: this probably belongs in load_assets.py
         self.save_dir = os.path.join(self.base_dir, 'data', 'saves')
         
         self.asset_loader = Loader(self)
@@ -126,12 +133,15 @@ class Game():
                 # if the user resizes the window (drag the bottom right corner)
                 # get the new size from the event dict and reset the 
                 # window screen surface
-                self.app_screen = pg.display.set_mode(event.dict['size'],
-                                                      *st.WINDOW_FLAGS)
-                self.app_screen_rect = self.app_screen.get_rect()
-                pg.display.update()
+                self.reset_app_screen(event.dict['size'])
                 
             self.state.get_event(event)
+    
+    
+    def reset_app_screen(self, size):
+        self.app_screen = pg.display.set_mode(size, self.window_flags)
+        self.app_screen_rect = self.app_screen.get_rect()
+        pg.display.update()
 
 
     def update(self, dt):
@@ -147,7 +157,7 @@ class Game():
         self.state.update(dt)
         
         current_fps = self.clock.get_fps()
-        pg.display.set_caption(f'FPS: {current_fps:2.2f}/{st.FPS} ({current_fps/st.FPS * 100:.1f} %)')
+        pg.display.set_caption(f'FPS: {current_fps:2.1f}')
 
 
     def draw(self):
@@ -163,23 +173,13 @@ class Game():
             app_ratio = self.app_screen_rect.w / self.app_screen_rect.h
 
             if game_ratio < app_ratio:
-                if self.game_screen_rect.h >= self.app_screen_rect.h:
-                    width = int(self.app_screen_rect.h / self.game_screen_rect.h 
-                            * self.game_screen_rect.w)
-                    height = self.app_screen_rect.h
-                else:
-                    width = int(self.app_screen_rect.h / self.game_screen_rect.h 
-                            * self.game_screen_rect.w)
-                    height = self.app_screen_rect.h
+                width = int(self.app_screen_rect.h / self.game_screen_rect.h 
+                        * self.game_screen_rect.w)
+                height = self.app_screen_rect.h
             else:
-                if self.game_screen_rect.h < self.app_screen_rect.h:
-                    width = self.app_screen_rect.w
-                    height = int(self.app_screen_rect.w / self.game_screen_rect.w
-                             * self.game_screen_rect.h)
-                else:
-                    width = self.app_screen_rect.w
-                    height = int(self.app_screen_rect.w / self.game_screen_rect.w
-                             * self.game_screen_rect.h)
+                width = self.app_screen_rect.w
+                height = int(self.app_screen_rect.w / self.game_screen_rect.w
+                         * self.game_screen_rect.h)
             resized_screen = pg.transform.scale(self.game_screen, 
                                                 (width, height))
         
@@ -197,8 +197,8 @@ class Game():
     def run(self):
         self.running = True
         while self.running:
-            #delta_time = self.clock.tick(self.fps) / 1000 # "dt"
-            delta_time = self.clock.tick() / 1000 # "dt"
+            delta_time = self.clock.tick(self.fps) / 1000 # "dt"
+            #delta_time = self.clock.tick() / 1000 # "dt"
             self.events()
             self.update(delta_time)
             self.draw()

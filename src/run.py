@@ -15,3 +15,4 @@ if __name__ == '__main__':
         with open('../errors.txt', 'a') as f:
             f.write(datetime.datetime.now().strftime('%d.%m.%Y %H:%M:%S')+ '\n')
             f.write(e + '\n')
+        pg.quit()
