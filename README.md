@@ -2,7 +2,7 @@
 
 ## Overview
 This is the third version of this project and just in its beginnings. 
-You are a (yet nameless) sworn knight that is sent by a mad king to retrieve ancient relics to conquer a menacing evil.
+You are a (yet nameless) sworn knight that is sent by a mad king to retrieve ancient relics that are prophesied to conquer a approaching evil.
 
 The final game should feature a new, semi-randomized experience in every playthrough. The game world consists of several towns with NPCs and (optional) quests, and dungeons with different themes, increasing size and difficulty.
 
