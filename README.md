@@ -7,7 +7,7 @@ You are a (yet nameless) sworn knight that is sent by a mad king to retrieve anc
 The final game should feature a new, semi-randomized experience in every playthrough. The game world consists of several towns with NPCs and (optional) quests, and dungeons with different themes, increasing size and difficulty.
 
 ## Requirements
-- Python 3.7 (might refactor this later for backwards compatibility)
+- Python 3.7 (I might refactor later for backwards compatibility)
 - pygame 1.9.6
 - PyTMX 3.21.7
 
