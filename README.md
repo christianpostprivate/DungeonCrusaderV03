@@ -33,4 +33,4 @@ The Game also supports the XBOX Game Pad
 |  Left ALT + ENTER |  Toggle Fullscreen   | 
 
 ## Screenshots 
-![Screenshot] (https://i.imgur.com/t2E5ZLn.png)
+![Screenshot](https://i.imgur.com/t2E5ZLn.png "Screenshot 1")
