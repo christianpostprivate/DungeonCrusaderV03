@@ -46,6 +46,15 @@ class Game():
         self.world_screen_rect = self.world_screen.get_rect()
         self.world_screen_rect.topleft = (0, st.GUI_HEIGHT)
         
+        # create a dict for graphics settings to be changed at runtime
+        self.graphics_settings = {
+                'window_scale': st.WINDOW_SCALE,
+                'window_width': st.WINDOW_W,
+                'window_height': st.WINDOW_H,
+                'window_stretched': st.WINDOW_STRETCHED
+                }
+        
+        
         self.fps = st.FPS
         self.all_sprites = pg.sprite.Group()
         self.gui_elements = pg.sprite.Group()
@@ -66,6 +75,13 @@ class Game():
                           for m in self.map_files] #TODO: this probably belongs in load_assets.py
         self.save_dir = os.path.join(self.base_dir, 'data', 'saves')
         
+        # load graphics and music
+        # import sound settings and set to dict to be changed at runtime
+        self.sound_settings = {
+                'sound_on': st.SOUND_ON,
+                'music_vol': st.MUSIC_VOLUME,
+                'sfx_vol': st.SFX_VOLUME
+                }
         self.asset_loader = Loader(self)
         self.graphics = self.asset_loader.load_graphics()
         self.asset_loader.load_sounds()
@@ -129,6 +145,13 @@ class Game():
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_F12:
                     self.debug_mode = not self.debug_mode
+                elif event.key == pg.K_F9:
+                    self.toggle_screen_scale()
+                elif event.key == pg.K_RETURN:
+                    if pg.key.get_pressed()[pg.K_LALT]:
+                        # toggle fullscreen
+                        self.window_flags = self.window_flags^pg.FULLSCREEN
+                        self.reset_app_screen()
             elif event.type == pg.VIDEORESIZE:
                 # if the user resizes the window (drag the bottom right corner)
                 # get the new size from the event dict and reset the 
@@ -138,11 +161,23 @@ class Game():
             self.state.get_event(event)
     
     
-    def reset_app_screen(self, size):
+    def reset_app_screen(self, size=None):
+        if size == None:
+            size = (self.graphics_settings['window_width'],
+                    self.graphics_settings['window_height'])
         self.app_screen = pg.display.set_mode(size, self.window_flags)
         self.app_screen_rect = self.app_screen.get_rect()
         pg.display.update()
+        
 
+    def toggle_screen_scale(self):
+        self.graphics_settings['window_scale'] = (self.graphics_settings['window_scale'] + 1) % 5
+        if self.graphics_settings['window_scale'] == 0:
+            self.graphics_settings['window_scale'] = 1
+        self.graphics_settings['window_width'] = self.game_screen_rect.w * self.graphics_settings['window_scale']
+        self.graphics_settings['window_height'] = self.game_screen_rect.h * self.graphics_settings['window_scale']
+        self.reset_app_screen()
+        
 
     def update(self, dt):
         # get input before state updates
@@ -164,7 +199,7 @@ class Game():
         # draw everything that happens in the current state
         self.state.draw()
         
-        if st.WINDOW_STRETCHED:
+        if self.graphics_settings['window_stretched']:
             # scale the game screen to the window size
             resized_screen = pg.transform.scale(self.game_screen, self.app_screen_rect.size)
         else:
@@ -198,9 +233,10 @@ class Game():
         self.running = True
         while self.running:
             delta_time = self.clock.tick(self.fps) / 1000 # "dt"
-            #delta_time = self.clock.tick() / 1000 # "dt"
             self.events()
-            self.update(delta_time)
-            self.draw()
+            # check delta time to prevent updating if the window is dragged/resized
+            if delta_time < 2 * 1/self.fps:
+                self.update(delta_time)
+                self.draw()
 
         pg.quit()
