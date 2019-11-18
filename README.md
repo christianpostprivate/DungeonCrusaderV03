@@ -25,6 +25,6 @@ The Game also supports the XBOX Game Pad
 | E  | R-Button    | 
 | ENTER  |  START-Button   | 
 | BACKSPACE  |  BACK-Button   | 
-|  ------------ |:--------------:| 
+|    | | 
 |  F12 | Toggle Debug Mode    | 
 |  Left ALT + ENTER |  Toggle Fullscreen   | 
