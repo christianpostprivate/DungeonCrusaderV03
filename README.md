@@ -31,3 +31,6 @@ The Game also supports the XBOX Game Pad
 |    | | 
 |  F12 | Toggle Debug Mode    | 
 |  Left ALT + ENTER |  Toggle Fullscreen   | 
+
+## Screenshots 
+![Screenshot] (https://i.imgur.com/t2E5ZLn.png)
