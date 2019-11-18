@@ -11,6 +11,9 @@ The final game should feature a new, semi-randomized experience in every playthr
 - pygame 1.9.6
 - PyTMX 3.21.7
 
+## Execution
+Download the Project Folder and execute `src/run.py` to play
+
 ## Controls (so far)
 The Game also supports the XBOX Game Pad
 
