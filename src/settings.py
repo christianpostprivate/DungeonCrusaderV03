@@ -7,7 +7,7 @@ from pygame.locals import FULLSCREEN, RESIZABLE, DOUBLEBUF
 DEBUG = False
 
 # SCREEN AND GRAPHICS
-# size of the application window (in pixels)
+# ratio of the app window to the game screen
 WINDOW_SCALE = 3
 # default Tilesize
 TILE_WIDTH = 16
@@ -34,13 +34,14 @@ WINDOW_FLAGS = (
 # whether the game screen gets resized to the same aspect ratio as the window 
 WINDOW_STRETCHED = False 
 
-# Frames per second
-FPS = 0
+# Frames cap per second
+FPS = 100
 
 DEFAULT_FONT = 'Arial'
 
 # MUSIC
 # global volumes
+SOUND_ON = False
 MUSIC_VOLUME = 0.5
 SFX_VOLUME = 0.6
 

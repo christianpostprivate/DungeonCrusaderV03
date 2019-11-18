@@ -1,8 +1,6 @@
 import pygame as pg
 import os
 
-import settings as st
-
 
 # TODO: multiple music channels?
 
@@ -84,19 +82,25 @@ class Loader():
         
         
     def play_music(self, key, loop=True):
+        # check if music is muted
+        if not self.game.sound_settings['sound_on']:
+            return
         if loop:
             loops = -1
         else:
             loops = 0
         pg.mixer.music.load(self.music_lib[key][0])
         pg.mixer.music.play(loops)
-        volume = st.MUSIC_VOLUME * self.music_lib[key][1]
+        volume = self.game.sound_settings['music_vol'] * self.music_lib[key][1]
         pg.mixer.music.set_volume(volume)
         
           
     def play_sound(self, key):
+        # check if sound is muted
+        if not self.game.sound_settings['sound_on']:
+            return
         sound = self.sfx_lib[key][0]
-        volume = st.SFX_VOLUME * self.sfx_lib[key][1]
+        volume = self.game.sound_settings['sfx_vol'] * self.sfx_lib[key][1]
         sound.set_volume(volume)
         # play the sound if it isn't already being played
         if self.channel is None:
