@@ -1,10 +1,13 @@
 import pygame as pg
 
-import tilemaps
-import sprites as spr
-import utilities as utils
-import settings as st
 from inventory import Inventory
+import items
+import settings as st
+import sprites as spr
+import tilemaps
+import utilities as utils
+
+
 
 
 '''
@@ -58,6 +61,8 @@ class Game_start(State):
         
         self.game.inventory = Inventory(self.game)
         
+        # TODO: Testing
+        self.game.inventory.add_item(items.Sword, 0, 0)
         
         self.game.camera = utils.Camera(self.game, self.game.map.size.x, 
                                         self.game.map.size.y, 'SLIDE')
