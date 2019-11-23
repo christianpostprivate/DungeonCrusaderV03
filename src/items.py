@@ -5,10 +5,13 @@ from constants import (RIGHT, DOWN, LEFT, UP)
 vec = pg.Vector2
 
 
-
+# ------------ Usable Items ---------------------------------------------------
 
 class Sword(pg.sprite.Sprite):
     # TODO: base item class as parent
+    # TODO: change this so it doesn't require a class variable
+    inventory_image_index = 0
+    name = "Sword"
     def __init__(self, player, game):
         super().__init__(game.all_sprites)
 

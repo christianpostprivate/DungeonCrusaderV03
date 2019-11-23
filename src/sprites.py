@@ -212,12 +212,16 @@ class Player(BaseSprite):
             super().startup()
             self.sprite.vel *= 0
             self.sprite.image_state = 'attack'
-            self.item = self.sprite.items[self.slot](self.sprite, self.game)
+            if self.sprite.items[self.slot]:
+                self.item = self.sprite.items[self.slot](self.sprite, self.game)
+            else:
+                self.item = None
+                self.done = True
             
         
         def update(self, dt):
             self.sprite.animate(dt)
-            if self.item.done:
+            if self.item and self.item.done:
                 self.done = True
     
     

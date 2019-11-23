@@ -60,13 +60,6 @@ class Game():
         self.gui_elements = pg.sprite.Group()
         self.walls = pg.sprite.Group()
         
-        self.fonts = {
-                'default_big': pygame.freetype.Font(file=None, size=22),
-                'default_small': pygame.freetype.Font(file=None, size=14)
-                }
-        for f in self.fonts.values():
-            f.antialiased = False
-        
         self.base_dir = os.path.join(os.path.dirname( __file__ ), '..')
         
         self.map_files = ['sample_map.tmx',
@@ -74,6 +67,20 @@ class Game():
         self.map_files = [os.path.join(self.base_dir, 'data', 'tilemaps', m) 
                           for m in self.map_files] #TODO: this probably belongs in load_assets.py
         self.save_dir = os.path.join(self.base_dir, 'data', 'saves')
+        self.font_dir = os.path.join(self.base_dir, 'assets', 'fonts')
+        
+        # define the ingame fonts
+        self.fonts = {
+                'default_big': pygame.freetype.Font(file=None, size=22),
+                'default_small': pygame.freetype.Font(file=None, size=14),
+                'default_inventory': pygame.freetype.Font(file=None, size=10),
+                'slkscr_8': pygame.freetype.Font(file=os.path.join(self.font_dir, 'slkscr.ttf'), size=8)
+                }
+                
+        print(type(self.fonts['slkscr_8']))
+        
+        for f in self.fonts.values():
+            f.antialiased = False
         
         # load graphics and music
         # import sound settings and set to dict to be changed at runtime
@@ -157,6 +164,10 @@ class Game():
                 # get the new size from the event dict and reset the 
                 # window screen surface
                 self.reset_app_screen(event.dict['size'])
+            
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                # just for debugging, not used
+                print(pygame.math.Vector2(pg.mouse.get_pos()) / st.WINDOW_SCALE)
                 
             self.state.get_event(event)
     

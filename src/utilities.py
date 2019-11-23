@@ -52,19 +52,17 @@ def collide_with_walls(sprite, group, dir_):
 
 def difference(list1, list2):
     return [1 if elem and not list1[i] else 0 for i, elem in enumerate(list2)]
+   
 
-
-def draw_text(surface, text, file, size, color, pos, align='topleft'):
+def draw_text(surface, text, font, color, pos, bg_color=None, align='topleft'):
     '''
-    draws the text string at a given position with the given text file
-    (might be too performance intensive?)
+    alingments are the same as the Rect object's
     '''
-    font = pg.font.Font(file, size)
-    font.set_bold(False)
-    text_surface = font.render(text, False, color)
-    text_rect = text_surface.get_rect()
-    setattr(text_rect, align, pos)
-    surface.blit(text_surface, text_rect)
+    txt_surf, txt_rect = font.render(text, 
+                                     fgcolor=color,
+                                     bgcolor=bg_color)
+    setattr(txt_rect, align, pos)
+    surface.blit(txt_surf, txt_rect)
     
 
 def is_jsonable(x):

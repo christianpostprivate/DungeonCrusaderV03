@@ -40,7 +40,9 @@ class Loader():
                 'knight_images': self.images_from_strip(sprite_images['knight_strip'], 10),
                 'knight_attack': self.images_from_strip(sprite_images['knight_attack'], 4),
                 'sword_anim': self.images_from_strip(sprite_images['sword_anim'], 16),
+                'sword': sprite_images['sword'],
                 'inventory_bg': gui_images['inventory_bg'],
+                'inventory_images': self.images_from_strip(gui_images['inv_item_strip'], None, (16, 16)),
                 'cursor_images': self.images_from_strip(gui_images['cursor'], 2),
                 'health_string': gui_images['health_string'],
                 'heart_images': self.images_from_strip(gui_images['hearts_strip'], 6),
@@ -49,7 +51,6 @@ class Loader():
                 'minimap_images': self.images_from_strip(gui_images['minimap_strip_7x5'], 20),
                 'magic_and_items': gui_images['magic_and_items']
                 }
-        
         return gfx_lib
     
     
@@ -113,9 +114,15 @@ class Loader():
                 self.channel = sound.play()
             
     
-    def images_from_strip(self, strip, number):
-        img_w = strip.get_width() // number
-        img_h = strip.get_height()
+    def images_from_strip(self, strip, number=None, tilesize=None):
+        # TODO: change this so it can process multiline images
+        if number:
+            img_w = strip.get_width() // number
+            img_h = strip.get_height()
+        elif tilesize:
+            img_w = tilesize[0]
+            img_h = tilesize[1]
+            number = strip.get_size()[0] // img_w
         
         images = []
         for i in range(number):
