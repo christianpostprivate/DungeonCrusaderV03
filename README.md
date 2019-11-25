@@ -20,18 +20,20 @@ The Game also supports the XBOX Game Pad
 
 | Key           | Function      | 
 | ------------- |:-------------:|
-| W,A,S,D      | D-Pad | 
-| N      | A-Button      |  
-| M | B-Button      | 
-| H | X-Button    | 
-|  J | Y-Button    | 
-| Q  | L-Button    | 
-| E  | R-Button    | 
-| ENTER  |  START-Button   | 
-| BACKSPACE  |  BACK-Button   | 
-|    | | 
-|  F12 | Toggle Debug Mode    | 
-|  Left ALT + ENTER |  Toggle Fullscreen   | 
+| W,A,S,D       | D-Pad         | 
+| N             | A-Button      |  
+| M             | B-Button      | 
+| H             | X-Button      | 
+|  J            | Y-Button      | 
+| Q             | L-Button      | 
+| E             | R-Button      | 
+| ENTER         |  START-Button | 
+| BACKSPACE     |  BACK-Button  |
+|               |               |
+| F9           | Stretch Game screen to window |
+| F10           | preset window sizes |
+| F12          | Toggle Debug Mode | 
+| Left ALT + ENTER |  Toggle Fullscreen   | 
 
 ## Screenshots 
 ![Screenshot](https://i.imgur.com/t2E5ZLn.png "Screenshot 1")
