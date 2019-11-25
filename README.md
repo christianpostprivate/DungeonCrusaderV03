@@ -12,8 +12,7 @@ The final game should feature a new, semi-randomized experience in every playthr
 - PyTMX 3.21.7
 
 ## Execution
-Download the Project Folder and execute `src/run.py` to play.
-
+Download the Project Folder and execute `src/run.py` to play.<br/>
 Creating a virtual environment from `requirements.txt` is adviced.
 
 ## Controls (so far)
