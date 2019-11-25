@@ -13,7 +13,7 @@ The final game should feature a new, semi-randomized experience in every playthr
 
 ## Execution
 Download the Project Folder and execute `src/run.py` to play.<br/>
-Creating a virtual environment from `requirements.txt` is adviced.
+Creating a virtual environment from `requirements.txt` is advised.
 
 ## Controls (so far)
 The Game also supports the XBOX Game Pad
