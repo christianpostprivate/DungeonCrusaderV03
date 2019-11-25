@@ -30,8 +30,8 @@ The Game also supports the XBOX Game Pad
 | ENTER         |  START-Button | 
 | BACKSPACE     |  BACK-Button  |
 |               |               |
-| F9           | Stretch Game screen to window |
-| F10           | preset window sizes |
+| F9           | Stretch Game screen to window size |
+| F10           | cycle trough preset window sizes |
 | F12          | Toggle Debug Mode | 
 | Left ALT + ENTER |  Toggle Fullscreen   | 
 
