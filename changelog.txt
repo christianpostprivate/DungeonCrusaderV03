@@ -1,0 +1,6 @@
+2019-11-25
+- added screenshot function to game.py
+- added data/text directory
+- textboxes now load from data/text with json
+- seperated animate_cursor() from draw() in inventory.py
+- added option to stretch the game screen to window size (F10)
