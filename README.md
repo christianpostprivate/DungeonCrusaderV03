@@ -13,6 +13,7 @@ The final game should feature a new, semi-randomized experience in every playthr
 
 ## Execution
 Download the Project Folder and execute `src/run.py` to play.
+
 Creating a virtual environment from `requirements.txt` is adviced.
 
 ## Controls (so far)
