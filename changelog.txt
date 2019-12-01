@@ -4,3 +4,18 @@
 - textboxes now load from data/text with json
 - seperated animate_cursor() from draw() in inventory.py
 - added option to stretch the game screen to window size (F10)
+
+2019-11-26
+- "inventory.py" renamed "interface.py"
+- moved Textbox sprite to interface.py
+- added a Base menu and Menu entry class
+
+2019-11-28
+- fixed game.change_state
+- added select menu
+
+2019-11-29
+- added title menu
+
+2019-12-01
+- items can now be assigned to one of 2 face buttons

@@ -1,6 +1,5 @@
 import pygame as pg
 #from random import randint
-import logging
 
 import items
 import settings as st
@@ -159,7 +158,7 @@ class Player(BaseSprite):
                 }
         
         self.items = {
-                'A': items.Sword,
+                'A': None,
                 'B': None
                 }
         self.item_using = None
@@ -319,154 +318,3 @@ class Wall(BaseSprite):
 
 
 # ------------------- Other sprites -------------------------------------------
-
-class Textbox(pg.sprite.Sprite):
-    def __init__(self, game, pos, text, callback_when_done=None):
-        super().__init__(game.cutscene_elements)
-        self.game = game
-        if self.game.state != 'Dialog':
-            self.game.change_state('Dialog')
-        # provide a function that is executed when the textbox is finished
-        self.callback = callback_when_done
-
-        self.size = (180, 64)
-        self.pos = vec(pos)
-        # set textbox vertical position based on players position
-        if self.game.player.rect.y > self.game.world_screen_rect.centery:
-            self.pos.y *= 0.5
-        else:
-            self.pos.y *= 1.25
-        self.image_original = pg.Surface(self.size)
-        self.image_original.fill(pg.Color('black')) # TODO make customizable
-        self.rect = self.image_original.get_rect()
-        self.rect.center = self.pos
-        
-        self.text = text
-        self.font = game.fonts['slkscr_8']
-        
-        self.words_left = []
-        self.words_prev = []
-
-        self.done = False
-        self.scroll = False
-        self.text_end = False
-        self.timer = 0
-        self.popup_time = 0.5
-
-        self.margin = vec(4, 4)
-        self.spacing = self.font.get_sized_height() + 2
-
-        #self.cursor = Cursor(self.game, self.rect.midbottom, 'S')
-    
-    
-    def popUp(self, dt):
-        if self.timer < self.popup_time and not self.done:
-            # enlarge the textbox image gradually
-            # calculate the new width and height by lerping
-            w = int((self.timer / self.popup_time) * self.size[0])
-            h = int((self.timer / self.popup_time) * self.size[1])
-            # scale the image
-            self.image = self.image_original.copy()
-            self.image = pg.transform.scale(self.image, (w, h))
-            self.rect = self.image.get_rect()
-            self.rect.center = self.pos
-            self.timer += dt
-        else:
-            self.done = True
-            self.timer = 0
-            
-    
-    def vanish(self, dt):
-        self.done = False
-        if self.timer < self.popup_time:
-            # shrink the textbox image gradually
-            # calculate the new width and height by lerping
-            w = int(self.size[0] - (self.timer / self.popup_time) * self.size[0])
-            h = int(self.size[1] - (self.timer / self.popup_time) * self.size[1])
-            # scale the image
-            self.image = self.image_original.copy()
-            self.image = pg.transform.scale(self.image, (w, h))
-            self.rect = self.image.get_rect()
-            self.rect.center = self.pos
-            self.timer += dt
-        else:
-            self.kill()
-            if self.callback:
-                self.callback()
-    
-    
-    def renderText(self):
-        line = 0
-        color = pg.Color('white')
-        txt = ''
-        txt_temp = ''
-        # create a list of words from the string
-        if len(self.words_left) == 0:
-            # if words_left is emtpy, use self.text
-            words = self.text.split(' ')
-        else:
-            # if there is text left, use it
-            words = self.words_left
-
-        for i in range(len(words)):
-            if words[i] == words[-1]:
-                self.text_end = True
-
-            if words[i] == '$nl':
-                # if words[i] ist the newline indicator,
-                # clear txt_temp and move to the next line
-                txt_temp = ''
-                line += 1
-            else:
-                # add the next word to the temporary text
-                txt_temp += words[i] + ' '
-            text_surface, text_rect = self.font.render(txt_temp, color)
-
-            h = (text_rect.h * line + self.spacing *
-                 max(0, line - 3))
-
-            if h < self.rect.height - self.margin.y * 2:
-                if text_rect.w < self.rect.width - self.margin.x * 2:
-                    # if text rect fits, render it
-                    txt = txt_temp
-                    text_surface, text_rect = self.font.render(txt, color)
-                    text_rect.topleft = (self.margin.x, self.margin.y +
-                                         self.spacing * line)
-                    self.image.blit(text_surface, text_rect)
-
-                else:
-                    # if the text rect is wider than the Textbox,
-                    # move to next line and set the current word as the first
-                    # word in txt_temp
-                    line += 1
-                    txt_temp = words[i] + ' '
-
-            else:
-                if self.scroll:
-                    self.words_left = words[i - 1:]
-                    self.scroll = False
-                break
-
-        if self.game.keydown['A']:
-            # scroll if the player hits the key assigned to A
-            self.scroll = True
-
-    
-    def update(self, dt):
-        if not self.done and not self.text_end:
-            # player pop up animation until done
-            self.popUp(dt)
-
-        if self.text_end and self.scroll:
-            # if text is finished and user scrolls, play vanish animation
-            self.vanish(dt)
-            
-    
-    def draw(self):
-        if self.done:
-            self.image.fill(pg.Color('black'))
-            self.renderText()
-        self.game.game_screen.blit(self.image, self.rect.topleft)
-
-        #if self.done:
-        #    self.cursor.draw(self.game.screen)
