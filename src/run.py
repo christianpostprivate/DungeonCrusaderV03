@@ -32,5 +32,5 @@ def print_profile():
 
 if __name__ == '__main__':
     cProfile.run('main()', '../data/profile')
-    #print('\n')
-    #print_profile()
+    print('\n')
+    print_profile()

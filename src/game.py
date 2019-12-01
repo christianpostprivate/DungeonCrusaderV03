@@ -84,7 +84,8 @@ class Game():
                 'default_big': pygame.freetype.Font(file=None, size=22),
                 'default_small': pygame.freetype.Font(file=None, size=14),
                 'default_inventory': pygame.freetype.Font(file=None, size=10),
-                'slkscr_8': pygame.freetype.Font(file=os.path.join(self.font_dir, 'slkscr.ttf'), size=8)
+                'slkscr_8': pygame.freetype.Font(file=os.path.join(self.font_dir, 'slkscr.ttf'), size=8),
+                'slkscr_16': pygame.freetype.Font(file=os.path.join(self.font_dir, 'slkscr.ttf'), size=16)
                 }
         
         for f in self.fonts.values():
@@ -143,8 +144,7 @@ class Game():
     def change_state(self, name):
         ''' change the current state to a specific one'''
         self.state.next = name
-        self.state.done = True
-        #self.flip_state()
+        self.flip_state()
         
     
     def save(self, filename):
@@ -250,6 +250,7 @@ class Game():
         
         current_fps = self.clock.get_fps()
         pg.display.set_caption(f'FPS: {current_fps:2.1f}')
+        #pg.display.set_caption(str(self.state))
 
 
     def draw(self):
@@ -284,6 +285,11 @@ class Game():
         self.app_screen.blit(resized_screen, res_screen_rect)
 
         pg.display.update(res_screen_rect)
+    
+    
+    def exit_game(self):
+        print('Exit game')
+        self.running = False
 
 
     def run(self):
