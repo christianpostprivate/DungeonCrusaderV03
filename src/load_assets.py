@@ -44,6 +44,7 @@ class Loader():
                 'inventory_bg': gui_images['inventory_bg'],
                 'inventory_images': self.images_from_strip(gui_images['inv_item_strip'], None, (16, 16)),
                 'cursor_images': self.images_from_strip(gui_images['cursor'], 2),
+                'arrow_images': self.images_from_strip(gui_images['arrows'], None, (8, 8)),
                 'health_string': gui_images['health_string'],
                 'heart_images': self.images_from_strip(gui_images['hearts_strip'], 6),
                 'magicbar': gui_images['magicbar'],

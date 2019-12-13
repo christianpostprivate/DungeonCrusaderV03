@@ -19,3 +19,9 @@
 
 2019-12-01
 - items can now be assigned to one of 2 face buttons
+
+2019-12-05
+- added overworld1.txt for testing overworld transitions
+
+2019-12-09
+- working overworld grid transitions and map lookup

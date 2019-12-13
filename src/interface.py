@@ -1,3 +1,5 @@
+import itertools
+
 import pygame as pg
 import settings as st
 import utilities as utils
@@ -127,9 +129,9 @@ class Inventory(pg.sprite.Sprite):
         if self.active:
             # construct the inventory image
             self.image.blit(self.bg_image, (0, 0))
-            self.draw_cursor()
             self.draw_hud()
             self.draw_items()
+            self.draw_cursor()
             self.game.game_screen.blit(self.image, self.rect)
     
     
@@ -235,13 +237,6 @@ class Inventory(pg.sprite.Sprite):
         text_pos = vec(80, 168)
         item = self.inv_items[self.inv_index[1]][self.inv_index[0]]
         if item:
-            '''
-            txt_surf, txt_rect = self.game.fonts['slkscr_8'].render(item.name, 
-                                            fgcolor=pg.Color('White'),
-                                            bgcolor=None)
-            txt_rect.center = text_pos
-            self.image.blit(txt_surf, txt_rect)
-            '''
             utils.draw_text(surface=self.image, 
                             text=item.name, 
                             font=self.game.fonts['slkscr_8'], 
@@ -276,14 +271,50 @@ class Inventory(pg.sprite.Sprite):
             return False
         else:
             return True
+        
+
+class Arrow(pg.sprite.Sprite):
+    def __init__(self, game, pos, direction):
+        super().__init__()
+        self.game = game
+        self.pos = pos
+        self.direction = direction
+
+        # TODO use UP DOWN etc constants and list instead of dict
+        self.images = {
+                'S': self.game.graphics['arrow_images'][0],
+                'N': self.game.graphics['arrow_images'][1],
+                'W': self.game.graphics['arrow_images'][2],
+                'E': self.game.graphics['arrow_images'][3],
+                'NONE': self.game.graphics['arrow_images'][4]
+                }
+
+        self.image_iter = itertools.cycle([self.images[self.direction], 
+                                           self.images['NONE']])
+        self.image = self.images[self.direction]
+        self.rect = self.image.get_rect()
+        self.rect.midbottom = self.pos
+       
+        self.anim_timer = 0
+        self.anim_frame = 0
+        self.anim_delay = 0.5
+    
+    
+    def update(self, dt):
+        self.anim_timer += dt
+        if self.anim_timer >= self.anim_delay:
+            self.anim_timer = 0
+            self.image = next(self.image_iter)
+        
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
 
 
 class Textbox(pg.sprite.Sprite):
     def __init__(self, game, pos, text, callback_when_done=None):
         super().__init__(game.cutscene_elements)
         self.game = game
-        if self.game.state != 'Dialog':
-            self.game.change_state('Dialog')
         # provide a function that is executed when the textbox is finished
         self.callback = callback_when_done
 
@@ -313,8 +344,10 @@ class Textbox(pg.sprite.Sprite):
 
         self.margin = vec(4, 4)
         self.spacing = self.font.get_sized_height() + 2
+        
+        self.active = False
 
-        #self.cursor = Cursor(self.game, self.rect.midbottom, 'S')
+        self.arrow = Arrow(self.game, self.rect.midbottom, 'S')
     
     
     def popUp(self, dt):
@@ -410,24 +443,42 @@ class Textbox(pg.sprite.Sprite):
             self.scroll = True
 
     
-    def update(self, dt):
-        if not self.done and not self.text_end:
-            # player pop up animation until done
-            self.popUp(dt)
+    def activate(self):
+        # TODO: probably put these into a parent class for textboxes and menus
+        self.previous_state = self.game.state
+        if self.game.state != 'Dialog':
+            self.game.change_state('Dialog')
+        self.active = True
+    
+    
+    def deactivate(self):
+        self.game.state = self.previous_state
+        self.active = False
 
-        if self.text_end and self.scroll:
-            # if text is finished and user scrolls, play vanish animation
-            self.vanish(dt)
+    
+    def update(self, dt):
+        if self.active:
+            if not self.done and not self.text_end:
+                # player pop up animation until done
+                self.popUp(dt)
+    
+            if self.text_end and self.scroll:
+                # if text is finished and user scrolls, play vanish animation
+                self.vanish(dt)
+            
+            if self.done:
+                self.arrow.update(dt)
             
     
     def draw(self):
-        if self.done:
-            self.image.fill(pg.Color('black'))
-            self.renderText()
-        self.game.game_screen.blit(self.image, self.rect.topleft)
-
-        #if self.done:
-        #    self.cursor.draw(self.game.screen)
+        if self.active:
+            if self.done:
+                self.image.fill(pg.Color('black'))
+                self.renderText()
+            self.game.game_screen.blit(self.image, self.rect.topleft)
+    
+            if self.done:
+                self.arrow.draw(self.game.game_screen)
         
 
 
