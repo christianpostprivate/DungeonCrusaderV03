@@ -113,21 +113,22 @@ class Camera():
     
 
     def apply_point(self, point):
-        return point - vec(self.rect.x, self.rect.y + st.GUI_HEIGHT)
+        v = point + vec(self.rect.x, self.rect.y + st.GUI_HEIGHT)
+        return (int(v.x), int(v.y))
 
 
-    def update(self, target, dt):
+    def update(self, target, dt=0):
         if self.mode == 'FOLLOW':
-            x = -target.rect.x + self.game.world_screen_rect.w // 2
-            y = -target.rect.y + self.game.world_screen_rect.h // 2 + st.GUI_HEIGHT
+            x = -target.rect.centerx + self.game.world_screen_rect.w // 2
+            y = -target.rect.centery + self.game.world_screen_rect.h // 2
         elif self.mode == 'CUT':
             # divide into quadrants
             quads_w = self.rect.w // self.game.world_screen_rect.w
             quads_h = self.rect.h // self.game.world_screen_rect.h
             # which quadrant the target is in.
-            qw = target.rect.x // (self.rect.w // quads_w)
+            qw = target.rect.centerx // (self.rect.w // quads_w)
             # subtract GUI height to adapt target position to world_screen
-            qh = (target.rect.y - st.GUI_HEIGHT) // (self.rect.h // quads_h)
+            qh = (target.rect.centery - st.GUI_HEIGHT) // (self.rect.h // quads_h)
             
             x = (self.game.world_screen_rect.w) * qw * -1
             y = (self.game.world_screen_rect.h) * qh * -1
@@ -175,9 +176,9 @@ class Camera():
                 self.prev_qh = qh
 
         # limit scrolling to map size
-        x = min(0, x) # left
+        x = min(0, x)  # left
         x = max(-(self.map_width - self.game.world_screen_rect.w), x) # right
-        y = min(0, y) # top
+        y = min(0, y)  # top
         y = max(-(self.map_height - self.game.world_screen_rect.h), y) # bottom
         
         self.rect = pg.Rect(x, y, self.map_width, self.map_height)

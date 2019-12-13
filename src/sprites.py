@@ -298,7 +298,7 @@ class Wall(BaseSprite):
     ''' Invisible Wall object for collisions
     '''
     def __init__(self, game, kwargs):
-        super().__init__(game, game.walls, **kwargs)
+        super().__init__(game, [game.all_sprites, game.walls], **kwargs)
         
         self.image = pg.Surface((self.width, self.height), pg.SRCALPHA)
         self.image.fill((0, 0, 0, 0))

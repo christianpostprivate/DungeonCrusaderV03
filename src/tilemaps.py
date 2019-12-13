@@ -3,9 +3,27 @@ from pytmx import TiledTileLayer, TiledObjectGroup
 from pytmx.util_pygame import load_pygame
 import inspect
 
+import settings as st
 import sprites as spr
 
 vec = pg.math.Vector2
+
+class Grid():
+    def __init__(self, game, name, width, height):
+        self.game = game
+        self.name = name
+
+        self.map = [[None for i in range(height)] for j in range(width)]
+        # TODO: should this be done in numpy?
+
+    def insert_grid(self, map_, index_x, index_y):
+        self.map[index_x][index_y] = map_
+
+    def get_map_at(self, index_x, index_y):
+        try:
+            return self.map[index_x][index_y]
+        except IndexError:
+            return None
 
 
 class Map():
@@ -20,6 +38,9 @@ class Map():
                         self.tiled_map.height * self.tilesize.y)
         self.background_color = self.tiled_map.background_color
         self.layers = []
+
+    def __repr__(self):
+        return self.filename.split('\\')[-1]
         
     
     def create_map(self):
@@ -31,7 +52,8 @@ class Map():
         #if self.background_color:
         #    self.map_image.fill(self.background_color)
         # TODO: create a mono colored background layer
-        
+
+        self.layers = []
         # loop through all available layers
         for layer in self.tiled_map:
             if isinstance(layer, TiledTileLayer) and layer.visible:
@@ -56,5 +78,7 @@ class Map():
                         sprites[obj.name](self.game, obj.__dict__)
                     else:
                         print(f'No sprite "{obj.name}" found in sprites module')
+
+        self.rect.topleft = (0, st.GUI_HEIGHT)
 
 

@@ -11,10 +11,8 @@ from pstats import SortKey
 def main():
     try:
         import game
-        
         g = game.Game()
         g.run()
-
     except Exception:
         e = traceback.format_exc()
         print(e)
@@ -33,4 +31,4 @@ def print_profile():
 if __name__ == '__main__':
     cProfile.run('main()', '../data/profile')
     print('\n')
-    print_profile()
+    #print_profile()

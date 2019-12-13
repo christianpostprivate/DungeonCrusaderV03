@@ -56,8 +56,7 @@ class Game():
                 'window_height': st.WINDOW_H,
                 'window_stretched': st.WINDOW_STRETCHED
                 }
-        
-        
+
         self.fps = st.FPS
         self.all_sprites = pg.sprite.Group()
         self.gui_elements = pg.sprite.Group()
@@ -67,9 +66,12 @@ class Game():
         self.base_dir = os.path.join(os.path.dirname( __file__ ), '..')
         
         self.map_files = ['sample_map.tmx',
-                          'sample_map2.tmx']
+                          'sample_map2.tmx',
+                          'overworld1.tmx',
+                          'overworld2.tmx',
+                          'overworld3.tmx']
         self.map_files = [os.path.join(self.base_dir, 'data', 'tilemaps', m) 
-                          for m in self.map_files] #TODO: this probably belongs in load_assets.py
+                          for m in self.map_files]  # TODO: this probably belongs in load_assets.py
         self.save_dir = os.path.join(self.base_dir, 'data', 'saves')
         self.font_dir = os.path.join(self.base_dir, 'assets', 'fonts')
         self.text_dir = os.path.join(self.base_dir, 'data', 'text')
@@ -112,6 +114,10 @@ class Game():
         self.setup_states()
         
         self.debug_mode = st.DEBUG
+
+        # stuff for states
+        self.map_index_x = 0
+        self.map_index_y = 0
     
     
     def setup_states(self):
@@ -208,12 +214,10 @@ class Game():
                 # get the new size from the event dict and reset the 
                 # window screen surface
                 self.reset_app_screen(event.dict['size'])
-            
-# =============================================================================
-#             elif event.type == pg.MOUSEBUTTONDOWN:
-#                 # just for debugging, not used
-#                 print(pygame.math.Vector2(pg.mouse.get_pos()) / st.WINDOW_SCALE)
-# =============================================================================
+
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                # just for debugging, not used
+                print(pygame.math.Vector2(pg.mouse.get_pos()) / st.WINDOW_SCALE)
                 
             self.state.get_event(event)
     
@@ -249,8 +253,14 @@ class Game():
         self.state.update(dt)
         
         current_fps = self.clock.get_fps()
-        pg.display.set_caption(f'FPS: {current_fps:2.1f}')
+        cap = (f'FPS: {current_fps:2.1f}      ' +
+               f'Sprites loaded: {len(self.all_sprites)}    ' +
+               f'Map index: {self.map_index_x} {self.map_index_y}')
+        pg.display.set_caption(cap)
         #pg.display.set_caption(str(self.state))
+
+        if self.debug_mode:
+            self.gamepad_controller.test_inputs('inputs_down')
 
 
     def draw(self):

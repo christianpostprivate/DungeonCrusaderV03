@@ -57,31 +57,50 @@ class Game_start(State):
     
     
     def startup(self):
-        self.game.map = tilemaps.Map(self.game, self.game.map_files[1])
+        # TODO: overworld grid should consist of multiple maps
+        # TODO: the grid construction should be done from json data
+        maps = [
+            tilemaps.Map(self.game, self.game.map_files[2]),
+            tilemaps.Map(self.game, self.game.map_files[3]),
+            tilemaps.Map(self.game, self.game.map_files[4])
+        ]
+        self.game.overworld_grid = tilemaps.Grid(self.game,
+                                                 name='overworld',
+                                                 width=2,
+                                                 height=2)
+        self.game.overworld_grid.insert_grid(maps[0], 0, 0)
+        self.game.overworld_grid.insert_grid(maps[1], 1, 0)
+        self.game.overworld_grid.insert_grid(maps[2], 0, 1)
+
+        self.game.map = maps[0]
         self.game.map.create_map()
-        self.game.map.rect.topleft = (0, st.GUI_HEIGHT)
-        
-        # TODO: the player is part of the map data. probably changing this(?)
-        self.game.player = self.game.all_sprites.sprites()[0]
+
+        # put the player somewhere on the map
+        self.game.player = spr.Player(self.game, {'x': 182, 'y': 136,
+                                                  'width': 16, 'height': 16})
         
         self.game.inventory = inter.Inventory(self.game)
         self.game.inventory.active = True
         
         # TODO: Testing
         self.game.inventory.add_item(items.Sword, 0, 0)
+        self.game.inventory.add_item(items.Test, 0, 1)
         
         self.game.camera = utils.Camera(self.game, self.game.map.size.x, 
-                                        self.game.map.size.y, 'SLIDE')
+                                        self.game.map.size.y, 'FOLLOW')
+        self.game.camera.update(self.game.player)
         
-        inter.Textbox(self.game, self.game.world_screen_rect.center, 
+        t = inter.Textbox(self.game, self.game.world_screen_rect.center, 
                       self.game.texts['demo_dialog'], 
                       lambda: self.game.change_state('In_game'))
+        #t.activate()
         
         self.game.select_menu = inter.Base_menu(self.game,
                                                 rect=None,
                                                 anchor_x='centerx')
         e1 = inter.Menu_entry('Resume Game', self.game.select_menu.deactivate)
-        e2 = inter.Menu_entry('Go To Title Screen', lambda: self.game.change_state('Title_screen'))
+        e2 = inter.Menu_entry('Go To Title Screen',
+                              lambda: self.game.change_state('Title_screen'))
         e3 = inter.Menu_entry('Exit Program', self.game.exit_game)
         self.game.select_menu.add_entries(e1, e2, e3)
         
@@ -129,7 +148,50 @@ class In_game(State):
             self.game.select_menu.activate()
             self.next = 'Menu'
             self.done = True
-              
+
+        # map transition
+        # TODO this seems wrong, refactor that map.rect is offset by gui height in display
+        # TODO: change game state to screen transition
+        # TODO: put this in function(s) of map object
+        change_x = 0
+        change_y = 0
+        # initialise map transition
+        if self.game.player.pos.x > self.game.map.rect.w:
+            change_x = 1
+        elif self.game.player.pos.x < self.game.map.rect.x:
+            change_x = -1
+        if self.game.player.pos.y > self.game.map.rect.h:
+            change_y = 1
+        elif self.game.player.pos.y < self.game.map.rect.y - st.GUI_HEIGHT:  # TODO: weird
+            change_y = -1
+
+        if change_x != 0 or change_y != 0:
+            new_x = max(0, self.game.map_index_x + change_x)
+            new_y = max(0, self.game.map_index_y + change_y)
+            new_map = self.game.overworld_grid.get_map_at(new_x, new_y)
+            # self.game.camera.is_sliding = True
+            # TODO: transition animation
+            if new_map:
+                for s in self.game.all_sprites:
+                    s.kill()
+                self.game.all_sprites.add(self.game.player)
+                self.game.map = new_map
+                self.game.map.create_map()
+                if change_x > 0:
+                    self.game.player.pos.x -= self.game.map.rect.w
+                elif change_x < 0:
+                    self.game.player.pos.x += self.game.map.rect.w
+
+                if change_y > 0:
+                    self.game.player.pos.y -= self.game.map.rect.h
+                elif change_y < 0:
+                    self.game.player.pos.y += self.game.map.rect.h
+
+                self.game.camera.update(self.game.player)
+
+                self.game.map_index_x = new_x
+                self.game.map_index_y = new_y
+
         
     def draw(self):
         #self.game.game_screen.fill(pg.Color('black'))
@@ -155,13 +217,22 @@ class In_game(State):
                     pg.draw.rect(self.game.game_screen, pg.Color('Red'), 
                                  self.game.camera.apply_rect(sprite.hitbox), 1)
         
-        for wall in self.game.walls:
-            wall.draw(self.game.game_screen, self.game.camera.apply(wall))
+        # for wall in self.game.walls:
+        #     wall.draw(self.game.game_screen, self.game.camera.apply(wall))
         
         for elem in self.game.gui_elements:
             # TODO: pass screen argument
             elem.draw()
-        
+
+        if self.game.debug_mode:
+            pg.draw.rect(self.game.world_screen, pg.Color('white'),
+                         self.game.camera.apply_rect(self.game.map.rect))
+            # pg.draw.line(self.game.game_screen, pg.Color('white'),
+            #              self.game.world_screen_rect.midleft,
+            #              self.game.world_screen_rect.midright)
+            # pg.draw.line(self.game.game_screen, pg.Color('white'),
+            #              self.game.world_screen_rect.midtop,
+            #              self.game.world_screen_rect.midbottom)
 # =============================================================================
 #         for s in self.game.all_sprites:
 #             pg.draw.rect(screen, pg.Color('white'), self.camera.apply_rect(s.rect), 1)
@@ -228,7 +299,8 @@ class Title_screen(State):
                                     pos=(self.game.game_screen_rect.w / 2,
                                          self.game.game_screen_rect.h / 3 * 2))
         self.menu.add_entries(
-                inter.Menu_entry('New Game', lambda: self.game.change_state('Game_start')),
+                inter.Menu_entry('New Game',
+                                 lambda: self.game.change_state('Game_start')),
                 inter.Menu_entry('Quit', self.game.exit_game)
                 )
 
@@ -255,35 +327,16 @@ class Title_screen(State):
         
     def draw(self):
         self.game.game_screen.fill(pg.Color('black'))
-        # TODO: replace with utils.draw_text
-        txt = 'DUNGEON CRUSADER'
-        txt_surf, txt_rect = self.game.fonts['default_big'].render(txt, 
-                                                    fgcolor=pg.Color('White'),
-                                                    bgcolor=None)
-                                                    
-        txt_rect.centerx = self.game.game_screen_rect.centerx
-        txt_rect.centery = 64
-        
-        
+
+        utils.draw_text(self.game.game_screen, 'DUNGEON CRUSADER', 
+                        self.game.fonts['default_big'], pg.Color('white'),
+                        (self.game.game_screen_rect.centerx, 64),
+                        align='center')
         
         for elem in self.game.gui_elements:
             # TODO: pass screen argument
             elem.draw()
-            pass
-        
-        self.game.game_screen.blit(txt_surf, txt_rect)
-# =============================================================================
-#         txt = 'Press any key to start.'
-#         txt_surf, txt_rect = self.game.fonts['default_small'].render(txt, 
-#                                                     fgcolor=pg.Color('White'),
-#                                                     bgcolor=None)
-#                                                     
-#         txt_rect.centerx = self.game.game_screen_rect.centerx
-#         txt_rect.centery = self.game.game_screen_rect.centery + 16
-#         
-#         self.game.game_screen.blit(txt_surf, txt_rect)
-# =============================================================================
-        
+
 
 
 class Menu_open(In_game):

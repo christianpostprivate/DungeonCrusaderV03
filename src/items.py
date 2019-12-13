@@ -1,6 +1,7 @@
 import pygame as pg
 
 from constants import (RIGHT, DOWN, LEFT, UP)
+import settings as st
 
 vec = pg.Vector2
 
@@ -74,7 +75,6 @@ class Sword(pg.sprite.Sprite):
     def animate(self, dt):
         anim = self.animations[self.dir]
         self.image = anim[self.anim_frame]
-        
         self.anim_timer += dt
         if self.anim_timer >= self.anim_delay:
             self.anim_timer = 0
@@ -111,4 +111,29 @@ class Sword(pg.sprite.Sprite):
         self.fired = False
         self.anim_frame = 0
         
+
+
+class Test(Sword):
+    # TODO: base item class as parent
+    # TODO: change this so it doesn't require a class variable
+    inventory_image_index = -1
+    name = "Test"
+    def __init__(self, player, game):
+        super().__init__(player, game)
+
+        img = []
+        for i in range(16):
+            s = pg.Surface((st.TILE_WIDTH, st.TILE_HEIGHT))
+            s.fill(pg.Color('red'))
+            img.append(s)
+        self.animations = {
+                UP: img[:4],
+                DOWN: img[4:8],
+                RIGHT: img[8:12],
+                LEFT: img[12:]
+                }
+
+        self.damage = 1000
+
+
     
