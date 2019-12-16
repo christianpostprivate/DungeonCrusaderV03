@@ -50,7 +50,8 @@ class Loader():
                 'magicbar': gui_images['magicbar'],
                 'arrows': self.images_from_strip(gui_images['arrows'], 4),
                 'minimap_images': self.images_from_strip(gui_images['minimap_strip_7x5'], 20),
-                'magic_and_items': gui_images['magic_and_items']
+                'magic_and_items': gui_images['magic_and_items'],
+                'enemy_skeleton': self.images_from_strip(sprite_images['skeleton_strip'], 7)
                 }
         return gfx_lib
     

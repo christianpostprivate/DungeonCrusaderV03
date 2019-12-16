@@ -8,6 +8,8 @@ import sprites as spr
 
 vec = pg.math.Vector2
 
+
+
 class Grid():
     def __init__(self, game, name, width, height):
         self.game = game
@@ -19,11 +21,31 @@ class Grid():
     def insert_grid(self, map_, index_x, index_y):
         self.map[index_x][index_y] = map_
 
+
     def get_map_at(self, index_x, index_y):
         try:
             return self.map[index_x][index_y]
         except IndexError:
             return None
+        
+        
+    def teleport(self, grid_x, grid_y, player_position):
+        # unloads the current map and sprites
+        # constructs the new map
+        if not self.game.overworld_grid.get_map_at(grid_x, grid_y):
+            print(f'No map at {grid_x}, {grid_y}')
+            return
+        
+        for s in self.game.all_sprites:
+            s.kill()
+        self.game.all_sprites.add(self.game.player)
+        self.game.map = self.game.overworld_grid.get_map_at(grid_x, grid_y)
+        self.game.map.create_map()
+        self.game.player.pos = player_position
+        
+        self.game.map_index_x = grid_x
+        self.game.map_index_y = grid_y
+
 
 
 class Map():
