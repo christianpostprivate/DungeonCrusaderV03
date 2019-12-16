@@ -7,8 +7,6 @@ import tilemaps
 import utilities as utils
 
 
-
-
 '''
 Based on the state machine tutorial by metulburr
 https://python-forum.io/Thread-PyGame-Creating-a-state-machine
@@ -46,14 +44,14 @@ class State(object):
     
 
 
-class Game_start(State):
+class GameStart(State):
     '''
     This state is called once at the beginning of the game
     it initialises all persistent objects (like the player, inventory etc)
     '''
     def __init__(self, game):
         State.__init__(self, game)
-        self.next = 'In_game'
+        self.next = 'InGame'
     
     
     def startup(self):
@@ -92,15 +90,19 @@ class Game_start(State):
         
         t = inter.Textbox(self.game, self.game.world_screen_rect.center, 
                       self.game.texts['demo_dialog'], 
-                      lambda: self.game.change_state('In_game'))
+                      lambda: self.game.change_state('InGame'))
         #t.activate()
+        
+        
+        spr.Enemy(self.game, {'x':300, 'y':100, 'width':16, 'height':16})
+        
         
         self.game.select_menu = inter.Base_menu(self.game,
                                                 rect=None,
                                                 anchor_x='centerx')
         e1 = inter.Menu_entry('Resume Game', self.game.select_menu.deactivate)
         e2 = inter.Menu_entry('Go To Title Screen',
-                              lambda: self.game.change_state('Title_screen'))
+                              lambda: self.game.change_state('TitleScreen'))
         e3 = inter.Menu_entry('Exit Program', self.game.exit_game)
         self.game.select_menu.add_entries(e1, e2, e3)
         
@@ -111,7 +113,7 @@ class Game_start(State):
         pass
 
 
-class In_game(State):
+class InGame(State):
     '''
     This is the default in game state where the user can control the 
     player sprite
@@ -127,7 +129,7 @@ class In_game(State):
     
     
     def cleanup(self):
-        if self.game.state.next == 'Title_screen':
+        if self.game.state.next == 'TitleScreen':
             # If user quits the game to title
             # TODO: probably add a save prompt here
             self.game.all_sprites.empty()
@@ -141,7 +143,7 @@ class In_game(State):
         self.game.camera.update(self.game.player, dt)
         
         if self.game.keydown['START']:
-            self.next = 'Menu_open'
+            self.next = 'MenuOpen'
             self.done = True
         
         elif self.game.keydown['SELECT']:
@@ -166,38 +168,27 @@ class In_game(State):
             change_y = -1
 
         if change_x != 0 or change_y != 0:
+            new_player_pos = tilemaps.vec(self.game.player.pos)
+            if change_x > 0:
+                new_player_pos.x -= self.game.map.rect.w
+            elif change_x < 0:
+                new_player_pos.x += self.game.map.rect.w
+
+            if change_y > 0:
+                new_player_pos.y -= self.game.map.rect.h
+            elif change_y < 0:
+                new_player_pos.y += self.game.map.rect.h
             new_x = max(0, self.game.map_index_x + change_x)
             new_y = max(0, self.game.map_index_y + change_y)
-            new_map = self.game.overworld_grid.get_map_at(new_x, new_y)
-            # self.game.camera.is_sliding = True
-            # TODO: transition animation
-            if new_map:
-                for s in self.game.all_sprites:
-                    s.kill()
-                self.game.all_sprites.add(self.game.player)
-                self.game.map = new_map
-                self.game.map.create_map()
-                if change_x > 0:
-                    self.game.player.pos.x -= self.game.map.rect.w
-                elif change_x < 0:
-                    self.game.player.pos.x += self.game.map.rect.w
-
-                if change_y > 0:
-                    self.game.player.pos.y -= self.game.map.rect.h
-                elif change_y < 0:
-                    self.game.player.pos.y += self.game.map.rect.h
-
-                self.game.camera.update(self.game.player)
-
-                self.game.map_index_x = new_x
-                self.game.map_index_y = new_y
-
+            self.game.overworld_grid.teleport(new_x, new_y, new_player_pos)
+        
         
     def draw(self):
+        # TODO: background color
         #self.game.game_screen.fill(pg.Color('black'))
         
         # draw map layers
-        # TODO: draw some layers above sprites
+        # TODO: draw some layers above the sprites
         # (each sprite and map layer should have a layer number)
         for i, layer in enumerate(self.game.map.layers):
             self.game.game_screen.blit(layer, 
@@ -227,6 +218,16 @@ class In_game(State):
         if self.game.debug_mode:
             pg.draw.rect(self.game.world_screen, pg.Color('white'),
                          self.game.camera.apply_rect(self.game.map.rect))
+            
+            for e in self.game.enemies:
+                if hasattr(e, 'aggro_dist'):
+                    pg.draw.circle(self.game.game_screen, pg.Color('red'),
+                                   self.game.camera.apply_point(e.pos), 
+                                   e.aggro_dist, 1)
+                    pg.draw.circle(self.game.game_screen, pg.Color('green'),
+                                   self.game.camera.apply_point(e.pos), 
+                                   e.idle_dist, 1)
+            
             # pg.draw.line(self.game.game_screen, pg.Color('white'),
             #              self.game.world_screen_rect.midleft,
             #              self.game.world_screen_rect.midright)
@@ -239,14 +240,14 @@ class In_game(State):
 # =============================================================================
 
 
-class Dialog(In_game):
+class Dialog(InGame):
     '''
     Testing the cutscene state
     TODO: maybe this has to be invoked by the textbox itself for convenience
     '''
     def __init__(self, game):
         State.__init__(self, game)
-        self.next = 'In_game'
+        self.next = 'InGame'
     
     
     def startup(self):
@@ -271,7 +272,7 @@ class Dialog(In_game):
 class Menu(State):
     def __init__(self, game):
         State.__init__(self, game)
-        self.next = 'In_game'
+        self.next = 'InGame'
     
     
     def update(self, dt):
@@ -286,10 +287,10 @@ class Menu(State):
         
 
 
-class Title_screen(State):
+class TitleScreen(State):
     def __init__(self, game):
         State.__init__(self, game)
-        self.next = 'Game_start'
+        self.next = 'GameStart'
         
         self.menu = inter.Base_menu(game=self.game,
                                     background_color=pg.Color('black'),
@@ -300,7 +301,7 @@ class Title_screen(State):
                                          self.game.game_screen_rect.h / 3 * 2))
         self.menu.add_entries(
                 inter.Menu_entry('New Game',
-                                 lambda: self.game.change_state('Game_start')),
+                                 lambda: self.game.change_state('GameStart')),
                 inter.Menu_entry('Quit', self.game.exit_game)
                 )
 
@@ -339,13 +340,13 @@ class Title_screen(State):
 
 
 
-class Menu_open(In_game):
+class MenuOpen(InGame):
     '''
     inherits In_game because it adds only to the draw function
     '''
     def __init__(self, game):
         super().__init__(game)
-        self.next = 'Item_menu'
+        self.next = 'ItemMenu'
     
     
     def cleanup(self):
@@ -366,13 +367,13 @@ class Menu_open(In_game):
         super().draw()
 
 
-class Menu_close(In_game):
+class MenuClose(InGame):
     '''
     inherits In_game because it adds only to the draw function
     '''
     def __init__(self, game):
         super().__init__(game)
-        self.next = 'In_game'
+        self.next = 'InGame'
         
     
     def cleanup(self):
@@ -393,10 +394,10 @@ class Menu_close(In_game):
         super().draw()
     
 
-class Item_menu(State):
+class ItemMenu(State):
     def __init__(self, game):
         State.__init__(self, game)
-        self.next = 'Menu_close'
+        self.next = 'MenuClose'
         
     
     def update(self, dt):

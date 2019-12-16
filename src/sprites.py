@@ -1,5 +1,5 @@
 import pygame as pg
-#from random import randint
+from random import choice
 
 import items
 import settings as st
@@ -23,6 +23,8 @@ class State():
         self.done = False # if true, the next state gets executed
         self.previous = None # the state that was executed before
         self.name = self.sprite.state_name
+        
+        self.anim_delay = 0.2 # this is used for state-individual animation
         
     def startup(self):
         pass
@@ -56,8 +58,8 @@ class BaseSprite(pg.sprite.Sprite):
                 setattr(self, key, value)
         
         self.anim_timer = 0
+        # TODO: probably put this also in State
         self.anim_frame = 0
-        self.anim_delay = 0.2 # overwrite this in child class
     
     
     def flip_state(self):
@@ -75,7 +77,7 @@ class BaseSprite(pg.sprite.Sprite):
         # loop through all of self.images and set self.image to the next
         # image if the time exceeds the delay
         self.anim_timer += dt
-        if self.anim_timer >= self.anim_delay:
+        if self.anim_timer >= self.state.anim_delay:
             # reset the timer
             self.anim_timer = 0
             # advance the frame
@@ -145,8 +147,6 @@ class Player(BaseSprite):
         self.speed = 20
         self.friction = 0.8
         
-        self.anim_delay = 0.2
-        
         # stats
         self.hp = 3.0
         self.max_hp = st.PLAYER_HP_START
@@ -166,8 +166,8 @@ class Player(BaseSprite):
         # setup state machine
         self.state_dict = {
                 'moving': self.Moving,
-                'USE_A': self.Use_item_A,
-                'USE_B': self.Use_item_B
+                'USE_A': self.UseItemA,
+                'USE_B': self.UseItemB
                 }
         self.state_name = 'moving'
         self.state = self.state_dict[self.state_name](self)
@@ -183,9 +183,7 @@ class Player(BaseSprite):
         
         def startup(self):
             super().startup()
-            
-            self.anim_timer = 0
-            self.anim_frame = 0
+
             self.anim_delay = 0.2
             
         
@@ -202,7 +200,7 @@ class Player(BaseSprite):
                 self.done = True
     
     
-    class Use_item(State):
+    class UseItem(State):
         '''parent class for Item using state'''
         def __init__(self, sprite):
             super().__init__(sprite.game, sprite)
@@ -225,13 +223,13 @@ class Player(BaseSprite):
                 self.done = True
     
     
-    class Use_item_A(Use_item):
+    class UseItemA(UseItem):
         def __init__(self, sprite):
             super().__init__(sprite)
             self.slot = 'A'
 
                 
-    class Use_item_B(Use_item):
+    class UseItemB(UseItem):
         def __init__(self, sprite):
             super().__init__(sprite)
             self.slot = 'B'
@@ -284,13 +282,15 @@ class Player(BaseSprite):
         self.pos += self.vel
     
 
-    def draw_reflection(self, screen, rect):
-        reflection_image = pg.transform.flip(self.image, False, True)
-        reflection_image.fill((255, 255, 255, 125), None, pg.BLEND_RGBA_MULT)
-        reflection_rect = reflection_image.get_rect()
-        reflection_rect.x = rect.x
-        reflection_rect.y = rect.y + rect.h
-        screen.blit(reflection_image, reflection_rect)
+# =============================================================================
+#     def draw_reflection(self, screen, rect):
+#         reflection_image = pg.transform.flip(self.image, False, True)
+#         reflection_image.fill((255, 255, 255, 125), None, pg.BLEND_RGBA_MULT)
+#         reflection_rect = reflection_image.get_rect()
+#         reflection_rect.x = rect.x
+#         reflection_rect.y = rect.y + rect.h
+#         screen.blit(reflection_image, reflection_rect)
+# =============================================================================
         
 
 
@@ -318,3 +318,179 @@ class Wall(BaseSprite):
 
 
 # ------------------- Other sprites -------------------------------------------
+            
+class Enemy(BaseSprite):
+    def __init__(self, game, kwargs):
+        super().__init__(game, [game.all_sprites, game.enemies], **kwargs)
+        
+        # TODO: this is a mixup between a parent class and the skeleton
+        images1 = game.graphics['enemy_skeleton'][:2]
+        images2 = game.graphics['enemy_skeleton'][2:]
+        self.images = {
+            'hit': None, #TODO
+            'idle': {
+                    RIGHT: images1,
+                    DOWN: images1,
+                    LEFT: images1,
+                    UP: images1
+                    },
+            'walk': {
+                    RIGHT: images1,
+                    DOWN: images1,
+                    LEFT: images1,
+                    UP: images1
+                    },
+            'attack': {
+                    RIGHT: images1,
+                    DOWN: images1,
+                    LEFT: images1,
+                    UP: images1,
+                    }
+            }
+        
+        self.image_state = 'idle'
+        self.direction = DOWN
+        self.lastdir = self.direction
+        self.image = self.images[self.image_state][self.direction][0]
+        
+        self.rect = self.image.get_rect()
+        self.hitbox = pg.Rect((0, 0), st.PLAYER_HITBOX_SIZE)
+        
+        self.pos = vec(self.x, self.y)
+        self.hitbox.center = self.pos
+        self.rect.midbottom = self.hitbox.midbottom
+        
+        # physics properties
+        self.acc = vec()
+        self.vel = vec()
+        self.speed = 12
+        self.friction = 0.8
+        
+        self.state_dict = {
+                'idle': self.Idle,
+                'wandering': self.Wandering,
+                'chase': self.Chase
+                }
+        self.state_name = 'wandering'
+        self.state = self.state_dict[self.state_name](self)
+        self.state.startup()
+        
+        self.aggro_dist = 60 # when the enemy starts charging at the player
+        self.idle_dist = 100 # when the enemy lets go off the player
+        self.player_dist = 12 # the minimum distance to the player
+        
+    
+    def collide_with_walls(self):
+        # collision detection
+        # the center of the hitbox is always at the sprite's position
+        self.hitbox.centerx = self.pos.x
+        utils.collide_with_walls(self, self.game.walls, 'x')
+        self.hitbox.centery = self.pos.y
+        utils.collide_with_walls(self, self.game.walls, 'y')
+        # the rect(where the image is drawn)'s bottom is aligned with the hitbox's bottom
+        self.rect.midbottom = self.hitbox.midbottom
+        
+    
+    def move(self, dt):
+        if self.acc.length() > 1:
+            # prevent faster diagnoal movement
+            self.acc.scale_to_length(1)
+        # laws of motion
+        self.vel += self.acc * self.speed * dt
+        self.vel *= self.friction
+        
+        speed = self.vel.length()
+        if speed < 0.1:
+            # stop and set idle image
+            self.vel *= 0
+            self.image_state = 'idle'
+        else:
+            self.image_state = 'walk'
+            # check direction
+            if self.acc.x > 0:
+                self.lastdir = RIGHT
+            elif self.acc.x < 0:
+                self.lastdir = LEFT
+            if self.acc.y > 0:
+                self.lastdir = DOWN
+            elif self.acc.y < 0:
+                self.lastdir = UP
+        self.images[self.image_state][self.lastdir]
+        
+        self.pos += self.vel
+        self.acc *= 0
+        
+    
+    
+    class Idle(State):
+        def __init__(self, sprite):
+            super().__init__(sprite.game, sprite)
+            self.next = 'chase'
+            
+            self.anim_delay = 0.3
+            
+        
+        def update(self, dt):
+            vec_to_player = self.game.player.pos - self.sprite.pos
+            dist = vec_to_player.length()
+            if self.sprite.player_dist < dist <= self.sprite.aggro_dist:
+                self.done = True
+            
+            self.sprite.move(dt)
+            self.sprite.collide_with_walls()
+            self.sprite.animate(dt)
+
+
+    class Wandering(State):
+        def __init__(self, sprite):
+            super().__init__(sprite.game, sprite)
+            self.next = 'chase'
+
+            self.anim_delay = 0.3
+            self.move_dir = vec()
+            self.walk_timer = 0
+            self.walk_delay = 1
+
+
+        def update(self, dt):
+            vec_to_player = self.game.player.pos - self.sprite.pos
+            dist = vec_to_player.length()
+            if self.sprite.player_dist < dist <= self.sprite.aggro_dist:
+                self.done = True
+            else:
+                self.walk_timer += dt
+                if self.walk_timer >= self.walk_delay:
+                    self.walk_timer -= self.walk_delay
+                    # TODO: This looks awful
+                    # use target vector for wandering
+                    self.move_dir = choice([
+                        vec(1, 0),
+                        vec(-1, 0),
+                        vec(0, 1),
+                        vec(0, -1)])
+                self.sprite.acc += self.move_dir
+
+            self.sprite.move(dt)
+            self.sprite.collide_with_walls()
+            self.sprite.animate(dt)
+            
+            
+    class Chase(State):
+        def __init__(self, sprite):
+            super().__init__(sprite.game, sprite)
+            self.next = 'wandering'
+            
+            self.anim_delay = 0.15
+    
+    
+        def update(self, dt):
+            vec_to_player = self.game.player.pos - self.sprite.pos
+            self.sprite.acc = vec_to_player.normalize() # TODO: lerp this
+
+            self.sprite.move(dt)
+            self.sprite.collide_with_walls()
+            self.sprite.animate(dt)
+            
+            dist = vec_to_player.length()
+            if dist > self.sprite.idle_dist or dist < self.sprite.player_dist:
+                self.done = True

@@ -59,7 +59,7 @@ class Inventory(pg.sprite.Sprite):
     
     def update(self, dt):
         if self.active:
-            if isinstance(self.game.state, self.game.state_dict['Item_menu']):
+            if isinstance(self.game.state, self.game.state_dict['ItemMenu']):
                 self.move_cursor()
 
             self.animate_cursor(dt)

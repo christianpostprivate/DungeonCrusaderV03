@@ -65,6 +65,10 @@ def draw_text(surface, text, font, color, pos, bg_color=None, align='topleft'):
     surface.blit(txt_surf, txt_rect)
     
 
+def int_vec(vector):
+    return (int(vector[0]), int(vector[0]))
+    
+
 def is_jsonable(x):
     try:
         json.dumps(x)

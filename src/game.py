@@ -59,6 +59,7 @@ class Game():
 
         self.fps = st.FPS
         self.all_sprites = pg.sprite.Group()
+        self.enemies = pg.sprite.Group()
         self.gui_elements = pg.sprite.Group()
         self.cutscene_elements = pg.sprite.Group()
         self.walls = pg.sprite.Group()
@@ -124,7 +125,7 @@ class Game():
         # get a dictionary with all classes from the 'states' module
         self.state_dict = dict(inspect.getmembers(states, inspect.isclass))
         # define the state at the start of the program
-        self.state_name = 'Title_screen'
+        self.state_name = 'TitleScreen'
         self.state = self.state_dict[self.state_name](self)
         # set a states name for __repr__
         for name, state in self.state_dict.items():
@@ -151,7 +152,7 @@ class Game():
         ''' change the current state to a specific one'''
         self.state.next = name
         self.flip_state()
-        
+
     
     def save(self, filename):
         '''default save function. Saves all sprites' attributes

@@ -25,3 +25,10 @@
 
 2019-12-09
 - working overworld grid transitions and map lookup
+
+2019-12-13
+- added teleport method to tilemaps.Grid
+- enemy class added with chasing behaviour
+
+2019-12-16
+- sprite state has the anim_delay property

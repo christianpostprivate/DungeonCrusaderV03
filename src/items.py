@@ -110,6 +110,15 @@ class Sword(pg.sprite.Sprite):
     def reset(self):
         self.fired = False
         self.anim_frame = 0
+    
+    
+    def draw_reflection(self, screen, rect):
+        reflection_image = pg.transform.flip(self.image, False, True)
+        reflection_image.fill((255, 255, 255, 125), None, pg.BLEND_RGBA_MULT)
+        reflection_rect = reflection_image.get_rect()
+        reflection_rect.x = rect.x
+        reflection_rect.y = rect.y + rect.h
+        screen.blit(reflection_image, reflection_rect)
         
 
 
