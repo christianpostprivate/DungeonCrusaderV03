@@ -4,7 +4,7 @@ import traceback
 
 # TODO move Button mapping to settings?
 
-class KeyGetter():
+class KeyGetter:
     def __init__(self, game):
         self.game = game
         # mapping is a dict with 'name': pg.Key
@@ -23,8 +23,8 @@ class KeyGetter():
                 'START': pg.K_RETURN,
                 'SELECT': pg.K_BACKSPACE
                 }
-    
-    
+
+
     def get_input(self, pad, events):
         '''
         Processes the inputs from a gamepad and the keyboard and combines them
@@ -33,6 +33,7 @@ class KeyGetter():
             pad: GamepadController instance
             events: event list from pygame.event.get()
         '''
+        
         # process key status
         # create empty dict with key status
         self.game.keys_pressed = {key: 0 for key in self.keyboard_mapping.keys()}
@@ -86,9 +87,14 @@ class KeyGetter():
             traceback.print_exc()
 
 
+def listen_for_gamepads():
+    # re-initialize joystick to look for pads plugged in at runtime
+    pg.joystick.init()
 
-class GamepadController():
+
+class GamepadController:
     def __init__(self):
+        self.gamepads = []
         # buttons held down
         self.inputs = []
         # button press events
@@ -153,8 +159,9 @@ class GamepadController():
         '''
         return any([any(i) for i in self.inputs])
 
-    
     def update(self):
+        listen_for_gamepads()
+
         self.gamepads = [pg.joystick.Joystick(x) for x in range(
                          pg.joystick.get_count())]
     
@@ -235,6 +242,4 @@ class GamepadController():
                     self.inputs_up_prev[n] = [inp for inp in self.inputs[n]]  
 
 
-                    
-                    
                     

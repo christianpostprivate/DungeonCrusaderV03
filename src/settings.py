@@ -56,3 +56,7 @@ PLAYER_HP_ROW = 7 # hearts per row
 
 PLAYER_HITBOX_SIZE = (13, 8)
 PLAYER_HITBOX_SIZE = (16, 8)
+
+# effects
+#DAMAGE_ALPHA = list(range(10, 255, 50))
+DAMAGE_ALPHA = [10, 50, 100, 150, 200, 255]
