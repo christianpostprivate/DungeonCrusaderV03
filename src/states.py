@@ -227,6 +227,11 @@ class InGame(State):
                     pg.draw.circle(self.game.game_screen, pg.Color('green'),
                                    self.game.camera.apply_point(e.pos), 
                                    e.idle_dist, 1)
+                    if hasattr(e.state, 'target'):
+                        pg.draw.line(self.game.game_screen, 
+                                     pg.Color('blue'),
+                                     self.game.camera.apply_point(e.pos),
+                                     self.game.camera.apply_point(e.state.target))
             
             # pg.draw.line(self.game.game_screen, pg.Color('white'),
             #              self.game.world_screen_rect.midleft,

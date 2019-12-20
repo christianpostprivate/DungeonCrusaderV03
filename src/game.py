@@ -115,6 +115,9 @@ class Game():
         self.setup_states()
         
         self.debug_mode = st.DEBUG
+        self.FPS_throttle = False
+        self.fps_counter = []
+        self.avg_fps = 0
 
         # stuff for states
         self.map_index_x = 0
@@ -180,12 +183,22 @@ class Game():
                 self.running = False
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_F12:
+                    # toggle debug mode
                     self.debug_mode = not self.debug_mode
                 elif event.key == pg.K_F9:
+                    # switch through different screen scales
                     self.toggle_screen_scale()
                 elif event.key == pg.K_F10:
+                    # stretch window to fit whole window
                     self.graphics_settings['window_stretched'] = not self.graphics_settings['window_stretched']
                     self.reset_app_screen(self.app_screen_rect.size)
+                elif event.key == pg.K_F11:
+                    # throttle the frame rate
+                    self.FPS_throttle = not self.FPS_throttle
+                    if self.FPS_throttle:
+                        self.fps = 10
+                    else:
+                        self.fps = st.FPS
                 elif event.key == pg.K_RETURN:
                     if pg.key.get_pressed()[pg.K_LALT]:
                         # toggle fullscreen
@@ -254,6 +267,7 @@ class Game():
         self.state.update(dt)
         
         current_fps = self.clock.get_fps()
+        self.fps_counter.append(current_fps)
         cap = (f'FPS: {current_fps:2.1f}      ' +
                f'Sprites loaded: {len(self.all_sprites)}    ' +
                f'Map index: {self.map_index_x} {self.map_index_y}')
@@ -314,3 +328,4 @@ class Game():
                 self.draw()
 
         pg.quit()
+        self.avg_fps = sum(self.fps_counter) / len(self.fps_counter)
